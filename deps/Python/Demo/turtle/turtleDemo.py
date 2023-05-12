@@ -201,14 +201,12 @@ class DemoWindow(object):
     def loadfile(self,filename):
         self.refreshCanvas()
         if os.path.exists(filename) and not os.path.isdir(filename):
-            # load and display file text
-            f = open(filename,'r')
-            chars = f.read()
-            f.close()
+            with open(filename,'r') as f:
+                chars = f.read()
             self.text.delete("1.0", "end")
             self.text.insert("1.0",chars)
             direc, fname = os.path.split(filename)
-            self.root.title(fname[6:-3]+" - a Python turtle graphics example")
+            self.root.title(f"{fname[6:-3]} - a Python turtle graphics example")
             self.module = __import__(fname[:-3])
             self.configGUI(NORMAL, NORMAL, DISABLED, DISABLED,
                            "Press start button", "red")
@@ -226,10 +224,7 @@ class DemoWindow(object):
 
         try:
             result = self.module.main()
-            if result == "EVENTLOOP":
-                self.state = EVENTDRIVEN
-            else:
-                self.state = DONE
+            self.state = EVENTDRIVEN if result == "EVENTLOOP" else DONE
         except turtle.Terminator:
             if self.root is None:
                 return
@@ -254,9 +249,7 @@ class DemoWindow(object):
             self.exitflag = False
             self.configGUI(NORMAL, NORMAL, DISABLED, DISABLED,
                            "STOPPED!", "red")
-            turtle.TurtleScreen._RUNNING = False
-        else:
-            turtle.TurtleScreen._RUNNING = False
+        turtle.TurtleScreen._RUNNING = False
 
     def _destroy(self):
         turtle.TurtleScreen._RUNNING = False

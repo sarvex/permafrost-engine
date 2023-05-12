@@ -40,10 +40,8 @@ Usage: %prog [options] msgfile
         if e.errno != errno.EEXIST:
             raise
 
-    fp = open(msgfile)
-    msg = email.message_from_file(fp)
-    fp.close()
-
+    with open(msgfile) as fp:
+        msg = email.message_from_file(fp)
     counter = 1
     for part in msg.walk():
         # multipart/* are just containers
@@ -59,9 +57,8 @@ Usage: %prog [options] msgfile
                 ext = '.bin'
             filename = 'part-%03d%s' % (counter, ext)
         counter += 1
-        fp = open(os.path.join(opts.directory, filename), 'wb')
-        fp.write(part.get_payload(decode=True))
-        fp.close()
+        with open(os.path.join(opts.directory, filename), 'wb') as fp:
+            fp.write(part.get_payload(decode=True))
 
 
 if __name__ == '__main__':

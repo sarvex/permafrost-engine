@@ -57,7 +57,7 @@ must be running an SMTP server.
         directory = '.'
     # Create the enclosing (outer) message
     outer = MIMEMultipart()
-    outer['Subject'] = 'Contents of directory %s' % os.path.abspath(directory)
+    outer['Subject'] = f'Contents of directory {os.path.abspath(directory)}'
     outer['To'] = COMMASPACE.join(opts.recipients)
     outer['From'] = opts.sender
     outer.preamble = 'You will not see this in a MIME-aware mail reader.\n'
@@ -76,23 +76,19 @@ must be running an SMTP server.
             ctype = 'application/octet-stream'
         maintype, subtype = ctype.split('/', 1)
         if maintype == 'text':
-            fp = open(path)
-            # Note: we should handle calculating the charset
-            msg = MIMEText(fp.read(), _subtype=subtype)
-            fp.close()
+            with open(path) as fp:
+                # Note: we should handle calculating the charset
+                msg = MIMEText(fp.read(), _subtype=subtype)
         elif maintype == 'image':
-            fp = open(path, 'rb')
-            msg = MIMEImage(fp.read(), _subtype=subtype)
-            fp.close()
+            with open(path, 'rb') as fp:
+                msg = MIMEImage(fp.read(), _subtype=subtype)
         elif maintype == 'audio':
-            fp = open(path, 'rb')
-            msg = MIMEAudio(fp.read(), _subtype=subtype)
-            fp.close()
+            with open(path, 'rb') as fp:
+                msg = MIMEAudio(fp.read(), _subtype=subtype)
         else:
-            fp = open(path, 'rb')
-            msg = MIMEBase(maintype, subtype)
-            msg.set_payload(fp.read())
-            fp.close()
+            with open(path, 'rb') as fp:
+                msg = MIMEBase(maintype, subtype)
+                msg.set_payload(fp.read())
             # Encode the payload using Base64
             encoders.encode_base64(msg)
         # Set the filename parameter
@@ -101,9 +97,8 @@ must be running an SMTP server.
     # Now send or store the message
     composed = outer.as_string()
     if opts.output:
-        fp = open(opts.output, 'w')
-        fp.write(composed)
-        fp.close()
+        with open(opts.output, 'w') as fp:
+            fp.write(composed)
     else:
         s = smtplib.SMTP('localhost')
         s.sendmail(opts.sender, opts.recipients, composed)

@@ -54,10 +54,16 @@ class DemoSHList:
         boldfont=hlist.tk.call('tix','option','get','bold_font')
 
         # First some styles for the headers
-        style={}
-        style['header'] = Tix.DisplayStyle(Tix.TEXT, refwindow=hlist,
-            anchor=Tix.CENTER, padx=8, pady=2, font = boldfont )
-
+        style = {
+            'header': Tix.DisplayStyle(
+                Tix.TEXT,
+                refwindow=hlist,
+                anchor=Tix.CENTER,
+                padx=8,
+                pady=2,
+                font=boldfont,
+            )
+        }
         hlist.header_create(0, itemtype=Tix.TEXT, text='Name',
             style=style['header'])
         hlist.header_create(1, itemtype=Tix.TEXT, text='Position',
@@ -113,18 +119,18 @@ class DemoSHList:
         # Create the managers
         #
 
-        for key,name,posn in managers :
-            e= '.'+ key
+        for key,name,posn in managers:
+            e = f'.{key}'
             hlist.add(e, itemtype=Tix.TEXT, text=name,
                 style=style['mgr_name'])
             hlist.item_create(e, 1, itemtype=Tix.TEXT, text=posn,
                 style=style['mgr_posn'])
 
 
-        for key,mgr,name,posn in employees :
+        for key,mgr,name,posn in employees:
             # "." is the separator character we chose above
 
-            entrypath = '.' + mgr        + '.' + key
+            entrypath = f'.{mgr}.{key}'
 
             #           ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
             #       parent entryPath / child's name

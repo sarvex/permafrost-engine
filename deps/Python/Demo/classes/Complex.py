@@ -84,14 +84,10 @@ def PolarToComplex(r = 0, phi = 0, fullcircle = twopi):
     return Complex(math.cos(phi)*r, math.sin(phi)*r)
 
 def Re(obj):
-    if IsComplex(obj):
-        return obj.re
-    return obj
+    return obj.re if IsComplex(obj) else obj
 
 def Im(obj):
-    if IsComplex(obj):
-        return obj.im
-    return 0
+    return obj.im if IsComplex(obj) else 0
 
 class Complex:
 
@@ -117,9 +113,7 @@ class Complex:
         raise TypeError, 'Complex numbers are immutable'
 
     def __hash__(self):
-        if not self.im:
-            return hash(self.re)
-        return hash((self.re, self.im))
+        return hash(self.re) if not self.im else hash((self.re, self.im))
 
     def __repr__(self):
         if not self.im:
@@ -128,10 +122,7 @@ class Complex:
             return 'Complex(%r, %r)' % (self.re, self.im)
 
     def __str__(self):
-        if not self.im:
-            return repr(self.re)
-        else:
-            return 'Complex(%r, %r)' % (self.re, self.im)
+        return repr(self.re) if not self.im else 'Complex(%r, %r)' % (self.re, self.im)
 
     def __neg__(self):
         return Complex(-self.re, -self.im)
@@ -198,10 +189,11 @@ class Complex:
 
     def __div__(self, other):
         other = ToComplex(other)
-        d = float(other.re*other.re + other.im*other.im)
-        if not d: raise ZeroDivisionError, 'Complex division'
-        return Complex((self.re*other.re + self.im*other.im) / d,
-                       (self.im*other.re - self.re*other.im) / d)
+        if d := float(other.re * other.re + other.im * other.im):
+            return Complex((self.re*other.re + self.im*other.im) / d,
+                           (self.im*other.re - self.re*other.im) / d)
+        else:
+            raise ZeroDivisionError, 'Complex division'
 
     def __rdiv__(self, other):
         other = ToComplex(other)

@@ -18,9 +18,7 @@ class Instance:
             value = self.__klass__.__namespace__[name]
         except KeyError:
             raise AttributeError, name
-        if type(value) is not types.FunctionType:
-            return value
-        return BoundMethod(value, self)
+        return BoundMethod(value, self) if type(value) is types.FunctionType else value
 
 class BoundMethod:
     def __init__(self, function, instance):

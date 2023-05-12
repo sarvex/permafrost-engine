@@ -319,7 +319,7 @@ def reindeer():
 
     for x_pos in range(70, 62, -1):
         if x_pos < 66: y_pos = 1
-        for looper in range(0, 4):
+        for _ in range(0, 4):
             dotdeer0.addch(y_pos, x_pos, ord('.'))
             dotdeer0.refresh()
             w_del_msg.refresh()
@@ -331,7 +331,7 @@ def reindeer():
     y_pos = 2
 
     for x_pos in range(x_pos - 1, 50, -1):
-        for looper in range(0, 4):
+        for _ in range(0, 4):
             if x_pos < 56:
                 y_pos = 3
 
@@ -343,15 +343,13 @@ def reindeer():
                 w_del_msg.refresh()
                 stardeer0.erase()
                 stardeer0.refresh()
-                w_del_msg.refresh()
             else:
                 dotdeer0.addch(y_pos, x_pos, ord('*'))
                 dotdeer0.refresh()
                 w_del_msg.refresh()
                 dotdeer0.erase()
                 dotdeer0.refresh()
-                w_del_msg.refresh()
-
+            w_del_msg.refresh()
     x_pos = 58
 
     for y_pos in range(2, 5):
@@ -359,7 +357,7 @@ def reindeer():
         lildeer0.refresh()
         w_del_msg.refresh()
 
-        for looper in range(0, 4):
+        for _ in range(0, 4):
             deer_step(lildeer3, y_pos, x_pos)
             deer_step(lildeer2, y_pos, x_pos)
             deer_step(lildeer1, y_pos, x_pos)
@@ -380,7 +378,7 @@ def reindeer():
         middeer0.refresh()
         w_del_msg.refresh()
 
-        for looper in range(2):
+        for _ in range(2):
             deer_step(middeer3, y_pos, x_pos)
             deer_step(middeer2, y_pos, x_pos)
             deer_step(middeer1, y_pos, x_pos)
@@ -409,7 +407,7 @@ def reindeer():
 
     x_pos -= 1
 
-    for looper in range(0, 6):
+    for _ in range(0, 6):
         deer_step(lookdeer4, y_pos, x_pos)
         deer_step(lookdeer3, y_pos, x_pos)
         deer_step(lookdeer2, y_pos, x_pos)
@@ -421,7 +419,7 @@ def reindeer():
     deer_step(lookdeer0, y_pos, x_pos)
 
     for y_pos in range(y_pos, 10):
-        for looper in range(0, 2):
+        for _ in range(0, 2):
             deer_step(bigdeer4, y_pos, x_pos)
             deer_step(bigdeer3, y_pos, x_pos)
             deer_step(bigdeer2, y_pos, x_pos)

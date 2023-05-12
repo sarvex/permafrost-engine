@@ -52,7 +52,7 @@ class Demo:
                 sys.path.insert(0, dirname)
         else:
             self.dir = os.getcwd()
-        sys.path.insert(0, self.dir+'/samples')
+        sys.path.insert(0, f'{self.dir}/samples')
 
     def MkMainMenu(self):
         top = self.root
@@ -161,9 +161,7 @@ class Demo:
             except:
                 # Otherwise it's some other error - be nice and say why
                 t, v, tb = sys.exc_info()
-                text = ""
-                for line in traceback.format_exception(t,v,tb):
-                    text += line + '\n'
+                text = "".join(line + '\n' for line in traceback.format_exception(t,v,tb))
                 try: tkMessageBox.showerror ('Error', text)
                 except: pass
                 self.exit = 1
@@ -255,14 +253,11 @@ def MainTextFont(w):
     point = demo.welsize['value']
     if font == 'Times Roman':
         font = 'times'
-    fontstr = '%s %s' % (font, point)
+    fontstr = f'{font} {point}'
     demo.welmsg['font'] = fontstr
 
 def ToggleHelp():
-    if demo.useBalloons.get() == '1':
-        demo.balloon['state'] = 'both'
-    else:
-        demo.balloon['state'] = 'none'
+    demo.balloon['state'] = 'both' if demo.useBalloons.get() == '1' else 'none'
 
 def MkChoosers(nb, name):
     w = nb.page(name)
@@ -288,14 +283,14 @@ def MkChoosers(nb, name):
 
     # First column: comBox and selector
     cbx.form(top=0, left=0, right='%33')
-    sel.form(left=0, right='&'+str(cbx), top=cbx)
-    opt.form(left=0, right='&'+str(cbx), top=sel, bottom=-1)
+    sel.form(left=0, right=f'&{str(cbx)}', top=cbx)
+    opt.form(left=0, right=f'&{str(cbx)}', top=sel, bottom=-1)
 
     # Second column: title .. etc
     til.form(left=cbx, top=0,right='%66')
-    ctl.form(left=cbx, right='&'+str(til), top=til)
-    fil.form(left=cbx, right='&'+str(til), top=ctl)
-    tbr.form(left=cbx, right='&'+str(til), top=fil, bottom=-1)
+    ctl.form(left=cbx, right=f'&{str(til)}', top=til)
+    fil.form(left=cbx, right=f'&{str(til)}', top=ctl)
+    tbr.form(left=cbx, right=f'&{str(til)}', top=fil, bottom=-1)
 
     #
     # Third column: file selection
@@ -375,7 +370,7 @@ def MkControl(w):
     spintxt.pack(side=Tix.TOP, padx=5, pady=3)
 
 def MkSelect(w):
-    options = "label.anchor %s" % Tix.CENTER
+    options = f"label.anchor {Tix.CENTER}"
 
     sel1 = Tix.Select(w, label='Mere Mortals', allowzero=1, radio=1,
                       orientation=Tix.VERTICAL,
@@ -402,7 +397,7 @@ def MkSelect(w):
     sel2.pack(side=Tix.LEFT, padx=5, pady=3, fill=Tix.X)
 
 def MkOptMenu(w):
-    options='menubutton.width 15 label.anchor %s' % Tix.E
+    options = f'menubutton.width 15 label.anchor {Tix.E}'
 
     m = Tix.OptionMenu(w, label='File Format : ', options=options)
     m.add_command('text', label='Plain Text')
@@ -449,15 +444,15 @@ def MkToolBar(w):
     font = Tix.Select(w, allowzero=1, radio=0, label='', options=options)
     para = Tix.Select(w, allowzero=0, radio=1, label='', options=options)
 
-    font.add('bold', bitmap='@' + demo.dir + '/bitmaps/bold.xbm')
-    font.add('italic', bitmap='@' + demo.dir + '/bitmaps/italic.xbm')
-    font.add('underline', bitmap='@' + demo.dir + '/bitmaps/underline.xbm')
-    font.add('capital', bitmap='@' + demo.dir + '/bitmaps/capital.xbm')
+    font.add('bold', bitmap=f'@{demo.dir}/bitmaps/bold.xbm')
+    font.add('italic', bitmap=f'@{demo.dir}/bitmaps/italic.xbm')
+    font.add('underline', bitmap=f'@{demo.dir}/bitmaps/underline.xbm')
+    font.add('capital', bitmap=f'@{demo.dir}/bitmaps/capital.xbm')
 
-    para.add('left', bitmap='@' + demo.dir + '/bitmaps/leftj.xbm')
-    para.add('right', bitmap='@' + demo.dir + '/bitmaps/rightj.xbm')
-    para.add('center', bitmap='@' + demo.dir + '/bitmaps/centerj.xbm')
-    para.add('justify', bitmap='@' + demo.dir + '/bitmaps/justify.xbm')
+    para.add('left', bitmap=f'@{demo.dir}/bitmaps/leftj.xbm')
+    para.add('right', bitmap=f'@{demo.dir}/bitmaps/rightj.xbm')
+    para.add('center', bitmap=f'@{demo.dir}/bitmaps/centerj.xbm')
+    para.add('justify', bitmap=f'@{demo.dir}/bitmaps/justify.xbm')
 
     msg.pack(side=Tix.TOP, expand=1, fill=Tix.BOTH, padx=3, pady=3)
     bar.pack(side=Tix.TOP, fill=Tix.X, padx=3, pady=3)
@@ -865,12 +860,24 @@ samples = {'Balloon'            : 'Balloon',
 ##      }
 ##
 
-stypes = {}
-stypes['widget'] = ['Balloon', 'Button Box', 'Combo Box', 'Control',
-                    'Directory List', 'Directory Tree',
-                    'Notebook', 'Option Menu', 'Popup Menu', 'Paned Window',
-                    'ScrolledHList (1)', 'ScrolledHList (2)', 'Tree (dynamic)']
-stypes['image'] = ['Compound Image']
+stypes = {
+    'widget': [
+        'Balloon',
+        'Button Box',
+        'Combo Box',
+        'Control',
+        'Directory List',
+        'Directory Tree',
+        'Notebook',
+        'Option Menu',
+        'Popup Menu',
+        'Paned Window',
+        'ScrolledHList (1)',
+        'ScrolledHList (2)',
+        'Tree (dynamic)',
+    ],
+    'image': ['Compound Image'],
+}
 
 def MkSample(nb, name):
     w = nb.page(name)
@@ -955,17 +962,17 @@ def Sample_Action(w, slb, stext, run, view, action):
     prog = samples[key]
 
     if action == 'run':
-        exec('import ' + prog)
+        exec(f'import {prog}')
         w = Tix.Toplevel()
         w.title(title)
-        rtn = eval(prog + '.RunSample')
+        rtn = eval(f'{prog}.RunSample')
         rtn(w)
     elif action == 'view':
         w = Tix.Toplevel()
-        w.title('Source view: ' + title)
-        LoadFile(w, demo.dir + '/samples/' + prog + '.py')
+        w.title(f'Source view: {title}')
+        LoadFile(w, f'{demo.dir}/samples/{prog}.py')
     elif action == 'browse':
-        ReadFile(stext.text, demo.dir + '/samples/' + prog + '.py')
+        ReadFile(stext.text, f'{demo.dir}/samples/{prog}.py')
 
 def LoadFile(w, fname):
     global root
@@ -989,11 +996,10 @@ def ReadFile(w, fname):
     w.delete('0.0', Tix.END)
 
     try:
-        f = open(fname)
-        lines = f.readlines()
-        for s in lines:
-            w.insert(Tix.END, s)
-        f.close()
+        with open(fname) as f:
+            lines = f.readlines()
+            for s in lines:
+                w.insert(Tix.END, s)
     finally:
 #       w.see('1.0')
         w['state'] = old_state

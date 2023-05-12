@@ -31,7 +31,7 @@ class GravSys(object):
         for p in self.planets:
             p.init()
     def start(self):
-        for i in range(10000):
+        for _ in range(10000):
             self.t += self.dt
             for p in self.planets:
                 p.step()

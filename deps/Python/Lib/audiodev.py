@@ -126,16 +126,10 @@ class Play_Audio_sgi:
         self.port.writesamps(data)
 
     def getfilled(self):
-        if self.port:
-            return self.port.getfilled()
-        else:
-            return 0
+        return self.port.getfilled() if self.port else 0
 
     def getfillable(self):
-        if self.port:
-            return self.port.getfillable()
-        else:
-            return self.config.getqueuesize()
+        return self.port.getfillable() if self.port else self.config.getqueuesize()
 
     # private methods
 ##      if 0: access *: private
@@ -208,10 +202,7 @@ class Play_Audio_sun:
             self.port = None
 
     def getfilled(self):
-        if self.port:
-            return self.port.obufcount()
-        else:
-            return 0
+        return self.port.obufcount() if self.port else 0
 
 ##    # Nobody remembers what this method does, and it's broken. :-(
 ##    def getfillable(self):

@@ -71,8 +71,12 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'o:p:')
     except getopt.error:
-        sys.stderr.write('Usage ' + sys.argv[0] +
-                         ' [ -o outfile ] [ -p octave ] [ words ] ...\n')
+        sys.stderr.write(
+            (
+                f'Usage {sys.argv[0]}'
+                + ' [ -o outfile ] [ -p octave ] [ words ] ...\n'
+            )
+        )
         sys.exit(1)
     dev = None
     wave = defaultwave
@@ -93,10 +97,7 @@ def main():
         dev.setnchannels(1)
         dev.close = dev.stop
         dev.writeframesraw = dev.writeframes
-    if args:
-        source = [' '.join(args)]
-    else:
-        source = iter(sys.stdin.readline, '')
+    source = [' '.join(args)] if args else iter(sys.stdin.readline, '')
     for line in source:
         mline = morse(line)
         play(mline, dev, wave)
@@ -127,11 +128,11 @@ def play(line, dev, wave):
         pause(dev, DOT)
 
 def sine(dev, length, wave):
-    for i in range(length):
+    for _ in range(length):
         dev.writeframesraw(wave)
 
 def pause(dev, length):
-    for i in range(length):
+    for _ in range(length):
         dev.writeframesraw(nowave)
 
 if __name__ == '__main__':

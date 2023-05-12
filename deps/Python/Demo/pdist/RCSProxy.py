@@ -91,10 +91,10 @@ class RCSProxyLocal(rcslib.RCS, DirSupport):
         BUFFERSIZE = 1024*8
         sum = md5.new()
         while 1:
-            buffer = f.read(BUFFERSIZE)
-            if not buffer:
+            if buffer := f.read(BUFFERSIZE):
+                sum.update(buffer)
+            else:
                 break
-            sum.update(buffer)
         self._closepipe(f)
         return sum.digest()
 
@@ -106,9 +106,8 @@ class RCSProxyLocal(rcslib.RCS, DirSupport):
 
     def put(self, name_rev, data, message=None):
         name, rev = self._unmangle(name_rev)
-        f = open(name, 'w')
-        f.write(data)
-        f.close()
+        with open(name, 'w') as f:
+            f.write(data)
         self.checkin(name_rev, message)
         self._remove(name)
 
@@ -168,10 +167,7 @@ class RCSProxyServer(RCSProxyLocal, server.SecureServer):
 def test_server():
     import string
     import sys
-    if sys.argv[1:]:
-        port = string.atoi(sys.argv[1])
-    else:
-        port = 4127
+    port = string.atoi(sys.argv[1]) if sys.argv[1:] else 4127
     proxy = RCSProxyServer(('', port))
     proxy._serverloop()
 

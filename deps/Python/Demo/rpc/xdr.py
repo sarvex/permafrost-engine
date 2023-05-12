@@ -37,8 +37,7 @@ class Packer:
     pack_enum = pack_int
 
     def pack_bool(self, x):
-        if x: self.buf = self.buf + '\0\0\0\1'
-        else: self.buf = self.buf + '\0\0\0\0'
+        self.buf = self.buf + '\0\0\0\1' if x else self.buf + '\0\0\0\0'
 
     def pack_uhyper(self, x):
         self.pack_uint(int(x>>32 & 0xffffffff))
@@ -190,10 +189,7 @@ class Unpacker:
         return list
 
     def unpack_farray(self, n, unpack_item):
-        list = []
-        for i in range(n):
-            list.append(unpack_item())
-        return list
+        return [unpack_item() for _ in range(n)]
 
     def unpack_array(self, unpack_item):
         n = self.unpack_uint()

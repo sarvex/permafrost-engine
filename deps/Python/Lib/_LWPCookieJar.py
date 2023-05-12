@@ -39,9 +39,7 @@ def lwp_cookie_str(cookie):
 
     keys = cookie._rest.keys()
     keys.sort()
-    for k in keys:
-        h.append((k, str(cookie._rest[k])))
-
+    h.extend((k, str(cookie._rest[k])) for k in keys)
     h.append(("version", str(cookie.version)))
 
     return join_header_words([h])
@@ -72,7 +70,7 @@ class LWPCookieJar(FileCookieJar):
                 continue
             if not ignore_expires and cookie.is_expired(now):
                 continue
-            r.append("Set-Cookie3: %s" % lwp_cookie_str(cookie))
+            r.append(f"Set-Cookie3: {lwp_cookie_str(cookie)}")
         return "\n".join(r+[""])
 
     def save(self, filename=None, ignore_discard=False, ignore_expires=False):
@@ -117,15 +115,10 @@ class LWPCookieJar(FileCookieJar):
 
                 for data in split_header_words([line]):
                     name, value = data[0]
-                    standard = {}
                     rest = {}
-                    for k in boolean_attrs:
-                        standard[k] = False
+                    standard = {k: False for k in boolean_attrs}
                     for k, v in data[1:]:
-                        if k is not None:
-                            lc = k.lower()
-                        else:
-                            lc = None
+                        lc = k.lower() if k is not None else None
                         # don't lose case distinction for unknown fields
                         if (lc in value_attrs) or (lc in boolean_attrs):
                             k = lc

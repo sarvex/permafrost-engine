@@ -19,7 +19,7 @@ class Security:
         try:
             self._key = eval(open(keyfile).readline())
         except IOError:
-            raise IOError, "python keyfile %s: cannot open" % keyfile
+            raise (IOError, f"python keyfile {keyfile}: cannot open")
 
     def _generate_challenge(self):
         import random

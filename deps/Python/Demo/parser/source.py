@@ -19,7 +19,7 @@ class Simple:
             "Method of Nested class."
             def nested_function():
                 "Function in method of Nested class."
-                pass
+
             return nested_function
 
 def function():

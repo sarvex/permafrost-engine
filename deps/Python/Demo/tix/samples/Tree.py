@@ -33,10 +33,7 @@ def RunSample(w):
     top.pack(side=Tix.TOP, fill=Tix.BOTH, expand=1)
 
 def adddir(tree, dir):
-    if dir == '/':
-        text = '/'
-    else:
-        text = os.path.basename(dir)
+    text = '/' if dir == '/' else os.path.basename(dir)
     tree.hlist.add(dir, itemtype=Tix.IMAGETEXT, text=text,
                    image=tree.tk.call('tix', 'getimage', 'folder'))
     try:
@@ -55,8 +52,7 @@ def adddir(tree, dir):
 # double clicks on a directory whose mode is "close": hide all of its child
 # entries
 def opendir(tree, dir):
-    entries = tree.hlist.info_children(dir)
-    if entries:
+    if entries := tree.hlist.info_children(dir):
         # We have already loaded this directory. Let's just
         # show all the child entries
         #
@@ -68,11 +64,15 @@ def opendir(tree, dir):
             tree.hlist.show_entry(entry)
     files = os.listdir(dir)
     for file in files:
-        if os.path.isdir(dir + '/' + file):
-            adddir(tree, dir + '/' + file)
+        if os.path.isdir(f'{dir}/{file}'):
+            adddir(tree, f'{dir}/{file}')
         else:
-            tree.hlist.add(dir + '/' + file, itemtype=Tix.IMAGETEXT, text=file,
-                           image=tree.tk.call('tix', 'getimage', 'file'))
+            tree.hlist.add(
+                f'{dir}/{file}',
+                itemtype=Tix.IMAGETEXT,
+                text=file,
+                image=tree.tk.call('tix', 'getimage', 'file'),
+            )
 
 if __name__ == '__main__':
     root = Tix.Tk()

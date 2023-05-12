@@ -170,10 +170,7 @@ def _read_ushort(file):
 
 def _read_string(file):
     length = ord(file.read(1))
-    if length == 0:
-        data = ''
-    else:
-        data = file.read(length)
+    data = '' if length == 0 else file.read(length)
     if length & 1 == 0:
         dummy = file.read(1)
     return data
@@ -404,9 +401,7 @@ class Aifc_read:
               self.getcomptype(), self.getcompname()
 
     def getmarkers(self):
-        if len(self._markers) == 0:
-            return None
-        return self._markers
+        return None if len(self._markers) == 0 else self._markers
 
     def getmark(self, id):
         for marker in self._markers:
@@ -424,8 +419,7 @@ class Aifc_read:
         if self._ssnd_seek_needed:
             self._ssnd_chunk.seek(0)
             dummy = self._ssnd_chunk.read(8)
-            pos = self._soundpos * self._framesize
-            if pos:
+            if pos := self._soundpos * self._framesize:
                 self._ssnd_chunk.seek(pos + 8)
             self._ssnd_seek_needed = 0
         if nframes == 0:
@@ -581,10 +575,7 @@ class Aifc_write:
             # else, assume it is an open file object already
             filename = '???'
         self.initfp(f)
-        if filename[-5:] == '.aiff':
-            self._aifc = 0
-        else:
-            self._aifc = 1
+        self._aifc = 0 if filename[-5:] == '.aiff' else 1
 
     def initfp(self, file):
         self._file = file
@@ -722,9 +713,7 @@ class Aifc_write:
         raise Error, 'marker %r does not exist' % (id,)
 
     def getmarkers(self):
-        if len(self._markers) == 0:
-            return None
-        return self._markers
+        return None if len(self._markers) == 0 else self._markers
 
     def tell(self):
         return self._nframeswritten
@@ -791,24 +780,25 @@ class Aifc_write:
         return data
 
     def _ensure_header_written(self, datasize):
-        if not self._nframeswritten:
-            if self._comptype in ('ULAW', 'ulaw', 'ALAW', 'alaw'):
-                if not self._sampwidth:
-                    self._sampwidth = 2
-                if self._sampwidth != 2:
-                    raise Error, 'sample width must be 2 when compressing with ULAW or ALAW'
-            if self._comptype == 'G722':
-                if not self._sampwidth:
-                    self._sampwidth = 2
-                if self._sampwidth != 2:
-                    raise Error, 'sample width must be 2 when compressing with G7.22 (ADPCM)'
-            if not self._nchannels:
-                raise Error, '# channels not specified'
+        if self._nframeswritten:
+            return
+        if self._comptype in ('ULAW', 'ulaw', 'ALAW', 'alaw'):
             if not self._sampwidth:
-                raise Error, 'sample width not specified'
-            if not self._framerate:
-                raise Error, 'sampling rate not specified'
-            self._write_header(datasize)
+                self._sampwidth = 2
+            if self._sampwidth != 2:
+                raise Error, 'sample width must be 2 when compressing with ULAW or ALAW'
+        if self._comptype == 'G722':
+            if not self._sampwidth:
+                self._sampwidth = 2
+            if self._sampwidth != 2:
+                raise Error, 'sample width must be 2 when compressing with G7.22 (ADPCM)'
+        if not self._nchannels:
+            raise Error, '# channels not specified'
+        if not self._sampwidth:
+            raise Error, 'sample width not specified'
+        if not self._framerate:
+            raise Error, 'sampling rate not specified'
+        self._write_header(datasize)
 
     def _init_compression(self):
         if self._comptype == 'G722':
@@ -955,10 +945,7 @@ class Aifc_write:
 
 def open(f, mode=None):
     if mode is None:
-        if hasattr(f, 'mode'):
-            mode = f.mode
-        else:
-            mode = 'rb'
+        mode = f.mode if hasattr(f, 'mode') else 'rb'
     if mode in ('r', 'rb'):
         return Aifc_read(f)
     elif mode in ('w', 'wb'):

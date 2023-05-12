@@ -38,7 +38,7 @@ def _load_imgs(imgdir):
     imgdir = os.path.expanduser(imgdir)
     if not os.path.isdir(imgdir):
         raise Exception("%r is not a directory, can't load images" % imgdir)
-    for f in glob.glob("%s/*.gif" % imgdir):
+    for f in glob.glob(f"{imgdir}/*.gif"):
         img = os.path.split(f)[1]
         name = img[:-4]
         imgs[name] = PhotoImage(name, file=f, format="gif89")

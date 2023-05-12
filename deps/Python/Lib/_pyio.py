@@ -218,10 +218,8 @@ def open(file, mode="r", buffering=-1,
             buffer = BufferedRandom(raw, buffering)
         elif writing or appending:
             buffer = BufferedWriter(raw, buffering)
-        elif reading:
-            buffer = BufferedReader(raw, buffering)
         else:
-            raise ValueError("unknown mode: %r" % mode)
+            buffer = BufferedReader(raw, buffering)
         result = buffer
         if binary:
             return result
@@ -299,8 +297,7 @@ class IOBase:
 
     def _unsupported(self, name):
         """Internal: raise an exception for unsupported operations."""
-        raise UnsupportedOperation("%s.%s() not supported" %
-                                   (self.__class__.__name__, name))
+        raise UnsupportedOperation(f"{self.__class__.__name__}.{name}() not supported")
 
     ### Positioning ###
 
@@ -500,10 +497,10 @@ class IOBase:
         return self
 
     def next(self):
-        line = self.readline()
-        if not line:
+        if line := self.readline():
+            return line
+        else:
             raise StopIteration
-        return line
 
     def readlines(self, hint=None):
         """Return a list of lines from the stream.
@@ -572,11 +569,7 @@ class RawIOBase(IOBase):
             if not data:
                 break
             res += data
-        if res:
-            return bytes(res)
-        else:
-            # b'' or None
-            return data
+        return bytes(res) if res else data
 
     def readinto(self, b):
         """Read up to len(b) bytes into b.
@@ -1504,9 +1497,8 @@ class TextIOWrapper(TextIOBase):
 
         if errors is None:
             errors = "strict"
-        else:
-            if not isinstance(errors, basestring):
-                raise ValueError("invalid errors: %r" % errors)
+        elif not isinstance(errors, basestring):
+            raise ValueError("invalid errors: %r" % errors)
 
         self._buffer = buffer
         self._line_buffering = line_buffering
@@ -1607,8 +1599,7 @@ class TextIOWrapper(TextIOBase):
         if self.closed:
             raise ValueError("write to closed file")
         if not isinstance(s, unicode):
-            raise TypeError("can't write %s to text stream" %
-                            s.__class__.__name__)
+            raise TypeError(f"can't write {s.__class__.__name__} to text stream")
         length = len(s)
         haslf = (self._writetranslate or self._line_buffering) and "\n" in s
         if haslf and self._writetranslate and self._writenl != "\n":
@@ -1876,7 +1867,6 @@ class TextIOWrapper(TextIOBase):
                       decoder.decode(self.buffer.read(), final=True))
             self._set_decoded_chars('')
             self._snapshot = None
-            return result
         else:
             # Keep reading chunks until we have n characters to return.
             eof = False
@@ -1884,7 +1874,8 @@ class TextIOWrapper(TextIOBase):
             while len(result) < n and not eof:
                 eof = not self._read_chunk()
                 result += self._get_decoded_chars(n - len(result))
-            return result
+
+        return result
 
     def next(self):
         self._telling = False

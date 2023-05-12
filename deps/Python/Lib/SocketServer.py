@@ -559,8 +559,7 @@ class ForkingMixIn:
     def process_request(self, request, client_address):
         """Fork a new subprocess to process the request."""
         self.collect_children()
-        pid = os.fork()
-        if pid:
+        if pid := os.fork():
             # Parent process
             if self.active_children is None:
                 self.active_children = set()

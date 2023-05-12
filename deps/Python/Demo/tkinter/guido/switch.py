@@ -6,10 +6,7 @@ class App:
 
     def __init__(self, top=None, master=None):
         if top is None:
-            if master is None:
-                top = Tk()
-            else:
-                top = Toplevel(master)
+            top = Tk() if master is None else Toplevel(master)
         self.top = top
         self.buttonframe = Frame(top)
         self.buttonframe.pack()

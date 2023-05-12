@@ -12,11 +12,10 @@ def TSTOP(*label):
     global t0, t1
     u, s, cu, cs = os.times()
     t1 = u+cu, s+cs, time.time()
-    tt = []
-    for i in range(3):
-        tt.append(t1[i] - t0[i])
+    tt = [t1[i] - t0[i] for i in range(3)]
     [u, s, r] = tt
     msg = ''
-    for x in label: msg = msg + (x + ' ')
+    for x in label:
+        msg = f'{msg}{x} '
     msg = msg + '%r user, %r sys, %r real\n' % (u, s, r)
     sys.stderr.write(msg)

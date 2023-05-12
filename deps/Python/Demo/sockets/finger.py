@@ -26,9 +26,10 @@ def finger(host, args):
     s.connect((host, FINGER_PORT))
     s.send(args + '\n')
     while 1:
-        buf = s.recv(1024)
-        if not buf: break
-        sys.stdout.write(buf)
+        if buf := s.recv(1024):
+            sys.stdout.write(buf)
+        else:
+            break
     sys.stdout.flush()
 
 
@@ -39,7 +40,7 @@ def main():
     i = 1
     while i < len(sys.argv) and sys.argv[i][:1] == '-':
         options = options + sys.argv[i] + ' '
-        i = i+1
+        i += 1
     args = sys.argv[i:]
     if not args:
         args = ['']

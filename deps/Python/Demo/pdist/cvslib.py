@@ -104,10 +104,7 @@ class File:
             self.rrev = self.proxy.head(self.file)
         except (os.error, IOError):
             self.rrev = None
-        if self.rrev:
-            self.rsum = self.proxy.sum(self.file)
-        else:
-            self.rsum = None
+        self.rsum = self.proxy.sum(self.file) if self.rrev else None
         if self.eseen:
             self.getesum()
         self.rseen = 1
@@ -133,12 +130,11 @@ class File:
 
         rev = self.erev or '0'
         if self.edeleted:
-            rev = '-' + rev
+            rev = f'-{rev}'
         if self.enew:
-            dates = 'Initial ' + self.file
+            dates = f'Initial {self.file}'
         else:
-            dates = gmctime(self.ectime) + ' ' + \
-                    gmctime(self.emtime)
+            dates = f'{gmctime(self.ectime)} {gmctime(self.emtime)}'
         return "/%s/%s/%s/%s/\n" % (
                 self.file,
                 rev,
@@ -283,16 +279,14 @@ class CVS:
 
     def backup(self, file):
         if os.path.isfile(file):
-            bfile = file + '~'
+            bfile = f'{file}~'
             try: os.unlink(bfile)
             except os.error: pass
             os.rename(file, bfile)
 
     def ignored(self, file):
         if os.path.isdir(file): return True
-        for pat in self.IgnoreList:
-            if fnmatch.fnmatch(file, pat): return True
-        return False
+        return any(fnmatch.fnmatch(file, pat) for pat in self.IgnoreList)
 
 
 # hexify and unhexify are useful to print MD5 checksums in hex format
@@ -300,9 +294,7 @@ class CVS:
 hexify_format = '%02x' * 16
 def hexify(sum):
     "Return a hex representation of a 16-byte string (e.g. an MD5 digest)"
-    if sum is None:
-        return "None"
-    return hexify_format % tuple(map(ord, sum))
+    return "None" if sum is None else hexify_format % tuple(map(ord, sum))
 
 def unhexify(hexsum):
     "Return the original from a hexified string"
@@ -333,8 +325,7 @@ def unctime(date):
     return time.mktime((year, month, day, hh, mm, ss, 0, 0, 0))
 
 def gmctime(t):
-    if t is None: return "None"
-    return time.asctime(time.gmtime(t))
+    return "None" if t is None else time.asctime(time.gmtime(t))
 
 def test_unctime():
     now = int(time.time())

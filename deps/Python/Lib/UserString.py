@@ -225,4 +225,4 @@ if __name__ == "__main__":
     if '-q' in sys.argv:
         from test import test_support
         test_support.verbose = 0
-    __import__('test.test_' + called_as.lower())
+    __import__(f'test.test_{called_as.lower()}')

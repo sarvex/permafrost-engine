@@ -72,11 +72,11 @@ class EiffelMethodWrapper(MetaMethodWrapper):
         # but inefficient; to avoid them, the lookup must be done
         # using the class.
         try:
-            self.pre = getattr(inst, self.__name__ + "_pre")
+            self.pre = getattr(inst, f"{self.__name__}_pre")
         except AttributeError:
             self.pre = None
         try:
-            self.post = getattr(inst, self.__name__ + "_post")
+            self.post = getattr(inst, f"{self.__name__}_post")
         except AttributeError:
             self.post = None
 

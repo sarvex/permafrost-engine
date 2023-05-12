@@ -34,7 +34,7 @@ class Electrons:
 
         self.pieces = []
         x1, y1, x2, y2 = 10,70,14,74
-        for i in range(n):
+        for _ in range(n):
             p = c.create_oval(x1, y1, x2, y2, fill='red')
             self.pieces.append(p)
             y1, y2 = y1 +2, y2 + 2
@@ -51,7 +51,7 @@ class Electrons:
     # Run -- allow 500 movemens
     def run(self):
         try:
-            for i in range(500):
+            for _ in range(500):
                 self.random_move(self.n)
         except TclError:
             try:
@@ -65,17 +65,12 @@ def main():
     import sys, string
 
     # First argument is number of electrons, default 30
-    if sys.argv[1:]:
-        n = string.atoi(sys.argv[1])
-    else:
-        n = 30
-
+    n = string.atoi(sys.argv[1]) if sys.argv[1:] else 30
     # Second argument is bitmap file, default none
     if sys.argv[2:]:
         bitmap = sys.argv[2]
         # Reverse meaning of leading '@' compared to Tk
-        if bitmap[0] == '@': bitmap = bitmap[1:]
-        else: bitmap = '@' + bitmap
+        bitmap = bitmap[1:] if bitmap[0] == '@' else f'@{bitmap}'
     else:
         bitmap = None
 

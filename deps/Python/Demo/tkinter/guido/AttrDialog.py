@@ -26,7 +26,7 @@ class Option:
         self.var = self.varclass(self.master)
         self.frame = Frame(self.master)
         self.frame.pack(fill=X)
-        self.label = Label(self.frame, text=(option + ":"))
+        self.label = Label(self.frame, text=f"{option}:")
         self.label.pack(side=LEFT)
         self.update()
         self.addoption()
@@ -111,10 +111,7 @@ class Dialog:
 
     def addchoices(self):
         self.choices = {}
-        list = []
-        for k, dc in self.options.items():
-            list.append((k, dc))
-        list.sort()
+        list = sorted(self.options.items())
         for k, (d, c) in list:
             try:
                 cl = self.classes[c]
@@ -202,7 +199,7 @@ class RemotePackDialog(PackDialog):
         self.widget = widget
         self.refresh()
         self.top = Toplevel(self.master)
-        self.top.title(self.app + ' PackDialog')
+        self.top.title(f'{self.app} PackDialog')
         self.top.minsize(1, 1)
         self.addchoices()
 

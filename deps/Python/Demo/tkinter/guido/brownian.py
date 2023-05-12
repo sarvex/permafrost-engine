@@ -36,10 +36,8 @@ def main():
     root = Tk()
     canvas = Canvas(root, width=WIDTH, height=HEIGHT)
     canvas.pack(fill='both', expand=1)
-    np = 30
-    if sys.argv[1:]:
-        np = int(sys.argv[1])
-    for i in range(np):
+    np = int(sys.argv[1]) if sys.argv[1:] else 30
+    for _ in range(np):
         t = threading.Thread(target=particle, args=(canvas,))
         t.start()
     try:

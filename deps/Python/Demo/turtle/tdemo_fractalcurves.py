@@ -54,7 +54,7 @@ class CurvesTurtle(Pen):
         self.fd(rad)
         self.pd()
         self.rt(180 - (90 * (n - 2) / n))
-        for i in range(n):
+        for _ in range(n):
             self.fractal(edge, lev, dir)
             self.rt(360 / n)
         self.lt(180 - (90 * (n - 2) / n))

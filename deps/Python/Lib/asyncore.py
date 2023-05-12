@@ -69,9 +69,7 @@ def _strerror(err):
     try:
         return os.strerror(err)
     except (ValueError, OverflowError, NameError):
-        if err in errorcode:
-            return errorcode[err]
-        return "Unknown error %s" %err
+        return errorcode[err] if err in errorcode else f"Unknown error {err}"
 
 class ExitNow(Exception):
     pass
@@ -206,11 +204,7 @@ def loop(timeout=30.0, use_poll=False, map=None, count=None):
     if map is None:
         map = socket_map
 
-    if use_poll and hasattr(select, 'poll'):
-        poll_fun = poll2
-    else:
-        poll_fun = poll
-
+    poll_fun = poll2 if use_poll and hasattr(select, 'poll') else poll
     if count is None:
         while map:
             poll_fun(timeout, map)
@@ -263,7 +257,7 @@ class dispatcher:
             self.socket = None
 
     def __repr__(self):
-        status = [self.__class__.__module__+"."+self.__class__.__name__]
+        status = [f"{self.__class__.__module__}.{self.__class__.__name__}"]
         if self.accepting and self.addr:
             status.append('listening')
         elif self.connected:
@@ -345,15 +339,17 @@ class dispatcher:
         self.connected = False
         self.connecting = True
         err = self.socket.connect_ex(address)
-        if err in (EINPROGRESS, EALREADY, EWOULDBLOCK) \
-        or err == EINVAL and os.name in ('nt', 'ce'):
+        if (
+            err in (EINPROGRESS, EALREADY, EWOULDBLOCK)
+            or err == EINVAL
+            and os.name in {'nt', 'ce'}
+        ):
             self.addr = address
             return
-        if err in (0, EISCONN):
-            self.addr = address
-            self.handle_connect_event()
-        else:
+        if err not in (0, EISCONN):
             raise socket.error(err, errorcode[err])
+        self.addr = address
+        self.handle_connect_event()
 
     def accept(self):
         # XXX can return either an address pair or None
@@ -417,11 +413,12 @@ class dispatcher:
         try:
             retattr = getattr(self.socket, attr)
         except AttributeError:
-            raise AttributeError("%s instance has no attribute '%s'"
-                                 %(self.__class__.__name__, attr))
+            raise AttributeError(
+                f"{self.__class__.__name__} instance has no attribute '{attr}'"
+            )
         else:
             msg = "%(me)s.%(attr)s is deprecated. Use %(me)s.socket.%(attr)s " \
-                  "instead." % {'me': self.__class__.__name__, 'attr':attr}
+                      "instead." % {'me': self.__class__.__name__, 'attr':attr}
             warnings.warn(msg, DeprecationWarning, stacklevel=2)
             return retattr
 
@@ -462,9 +459,8 @@ class dispatcher:
             # We will pretend it didn't happen.
             return
 
-        if not self.connected:
-            if self.connecting:
-                self.handle_connect_event()
+        if not self.connected and self.connecting:
+            self.handle_connect_event()
         self.handle_write()
 
     def handle_expt_event(self):
@@ -492,14 +488,9 @@ class dispatcher:
             self_repr = '<__repr__(self) failed for object at %0x>' % id(self)
 
         self.log_info(
-            'uncaptured python exception, closing channel %s (%s:%s %s)' % (
-                self_repr,
-                t,
-                v,
-                tbinfo
-                ),
-            'error'
-            )
+            f'uncaptured python exception, closing channel {self_repr} ({t}:{v} {tbinfo})',
+            'error',
+        )
         self.handle_close()
 
     def handle_expt(self):
@@ -545,7 +536,7 @@ class dispatcher_with_send(dispatcher):
 
     def send(self, data):
         if self.debug:
-            self.log_info('sending %s' % repr(data))
+            self.log_info(f'sending {repr(data)}')
         self.out_buffer = self.out_buffer + data
         self.initiate_send()
 

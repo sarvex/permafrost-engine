@@ -36,7 +36,7 @@ def main():
 
     for t in p, q:
         t.begin_fill()
-    for i in range(5):
+    for _ in range(5):
         for t in p, q:
             t.fd(50)
             t.lt(72)

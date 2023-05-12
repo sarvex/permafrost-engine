@@ -19,7 +19,7 @@ from time import clock, sleep
 def mn_eck(p, ne,sz):
     turtlelist = [p]
     #create ne-1 additional turtles
-    for i in range(1,ne):
+    for _ in range(1,ne):
         q = p.clone()
         q.rt(360.0/ne)
         turtlelist.append(q)
@@ -52,7 +52,7 @@ def main():
     sleep(1)
 
     at = clock()
-    while any([t.undobufferentries() for t in s.turtles()]):
+    while any(t.undobufferentries() for t in s.turtles()):
         for t in s.turtles():
             t.undo()
     et = clock()

@@ -131,10 +131,11 @@ def test_semaphore():
     running = multiprocessing.Value('i', 0)
 
     processes = [
-        multiprocessing.Process(target=semaphore_func,
-                                args=(sema, mutex, running))
-        for i in range(10)
-        ]
+        multiprocessing.Process(
+            target=semaphore_func, args=(sema, mutex, running)
+        )
+        for _ in range(10)
+    ]
 
     for p in processes:
         p.start()

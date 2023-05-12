@@ -86,9 +86,11 @@ class ABCMeta(type):
     def __new__(mcls, name, bases, namespace):
         cls = super(ABCMeta, mcls).__new__(mcls, name, bases, namespace)
         # Compute set of abstract method names
-        abstracts = set(name
-                     for name, value in namespace.items()
-                     if getattr(value, "__isabstractmethod__", False))
+        abstracts = {
+            name
+            for name, value in namespace.items()
+            if getattr(value, "__isabstractmethod__", False)
+        }
         for base in bases:
             for name in getattr(base, "__abstractmethods__", set()):
                 value = getattr(cls, name, None)
@@ -102,18 +104,18 @@ class ABCMeta(type):
         cls._abc_negative_cache_version = ABCMeta._abc_invalidation_counter
         return cls
 
-    def register(cls, subclass):
+    def register(self, subclass):
         """Register a virtual subclass of an ABC."""
         if not isinstance(subclass, (type, types.ClassType)):
             raise TypeError("Can only register classes")
-        if issubclass(subclass, cls):
+        if issubclass(subclass, self):
             return  # Already a subclass
         # Subtle: test for cycles *after* testing for "already a subclass";
         # this means we allow X.register(X) and interpret it as a no-op.
-        if issubclass(cls, subclass):
+        if issubclass(self, subclass):
             # This would create a cycle, which is bad for the algorithm below
             raise RuntimeError("Refusing to create an inheritance cycle")
-        cls._abc_registry.add(subclass)
+        self._abc_registry.add(subclass)
         ABCMeta._abc_invalidation_counter += 1  # Invalidate negative cache
 
     def _dump_registry(cls, file=None):
@@ -125,61 +127,62 @@ class ABCMeta(type):
                 value = getattr(cls, name)
                 print >> file, "%s: %r" % (name, value)
 
-    def __instancecheck__(cls, instance):
+    def __instancecheck__(self, instance):
         """Override for isinstance(instance, cls)."""
         # Inline the cache checking when it's simple.
         subclass = getattr(instance, '__class__', None)
-        if subclass is not None and subclass in cls._abc_cache:
+        if subclass is not None and subclass in self._abc_cache:
             return True
         subtype = type(instance)
         # Old-style instances
         if subtype is _InstanceType:
             subtype = subclass
         if subtype is subclass or subclass is None:
-            if (cls._abc_negative_cache_version ==
-                ABCMeta._abc_invalidation_counter and
-                subtype in cls._abc_negative_cache):
+            if (
+                self._abc_negative_cache_version
+                == ABCMeta._abc_invalidation_counter
+                and subtype in self._abc_negative_cache
+            ):
                 return False
             # Fall back to the subclass check.
-            return cls.__subclasscheck__(subtype)
-        return (cls.__subclasscheck__(subclass) or
-                cls.__subclasscheck__(subtype))
+            return self.__subclasscheck__(subtype)
+        return self.__subclasscheck__(subclass) or self.__subclasscheck__(subtype)
 
-    def __subclasscheck__(cls, subclass):
+    def __subclasscheck__(self, subclass):
         """Override for issubclass(subclass, cls)."""
         # Check cache
-        if subclass in cls._abc_cache:
+        if subclass in self._abc_cache:
             return True
         # Check negative cache; may have to invalidate
-        if cls._abc_negative_cache_version < ABCMeta._abc_invalidation_counter:
+        if self._abc_negative_cache_version < ABCMeta._abc_invalidation_counter:
             # Invalidate the negative cache
-            cls._abc_negative_cache = WeakSet()
-            cls._abc_negative_cache_version = ABCMeta._abc_invalidation_counter
-        elif subclass in cls._abc_negative_cache:
+            self._abc_negative_cache = WeakSet()
+            self._abc_negative_cache_version = ABCMeta._abc_invalidation_counter
+        elif subclass in self._abc_negative_cache:
             return False
         # Check the subclass hook
-        ok = cls.__subclasshook__(subclass)
+        ok = self.__subclasshook__(subclass)
         if ok is not NotImplemented:
             assert isinstance(ok, bool)
             if ok:
-                cls._abc_cache.add(subclass)
+                self._abc_cache.add(subclass)
             else:
-                cls._abc_negative_cache.add(subclass)
+                self._abc_negative_cache.add(subclass)
             return ok
         # Check if it's a direct subclass
-        if cls in getattr(subclass, '__mro__', ()):
-            cls._abc_cache.add(subclass)
+        if self in getattr(subclass, '__mro__', ()):
+            self._abc_cache.add(subclass)
             return True
         # Check if it's a subclass of a registered class (recursive)
-        for rcls in cls._abc_registry:
+        for rcls in self._abc_registry:
             if issubclass(subclass, rcls):
-                cls._abc_cache.add(subclass)
+                self._abc_cache.add(subclass)
                 return True
         # Check if it's a subclass of a subclass (recursive)
-        for scls in cls.__subclasses__():
+        for scls in self.__subclasses__():
             if issubclass(subclass, scls):
-                cls._abc_cache.add(subclass)
+                self._abc_cache.add(subclass)
                 return True
         # No dice; update negative cache
-        cls._abc_negative_cache.add(subclass)
+        self._abc_negative_cache.add(subclass)
         return False

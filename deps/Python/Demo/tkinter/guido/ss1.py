@@ -41,10 +41,7 @@ class Sheet:
 
     def cellvalue(self, x, y):
         cell = self.getcell(x, y)
-        if hasattr(cell, 'recalc'):
-            return cell.recalc(self.rexec)
-        else:
-            return cell
+        return cell.recalc(self.rexec) if hasattr(cell, 'recalc') else cell
 
     def multicellvalue(self, x1, y1, x2, y2):
         if x1 > x2:
@@ -53,8 +50,7 @@ class Sheet:
             y1, y2 = y2, y1
         seq = []
         for y in range(y1, y2+1):
-            for x in range(x1, x2+1):
-                seq.append(self.cellvalue(x, y))
+            seq.extend(self.cellvalue(x, y) for x in range(x1, x2+1))
         return seq
 
     def getcell(self, x, y):
@@ -202,7 +198,7 @@ class Sheet:
             if hasattr(cell, 'xml'):
                 cellxml = cell.xml()
             else:
-                cellxml = '<value>%s</value>' % cgi.escape(cell)
+                cellxml = f'<value>{cgi.escape(cell)}</value>'
             out.append('<cell row="%s" col="%s">\n  %s\n</cell>' %
                        (y, x, cellxml))
         out.append('</spreadsheet>')
@@ -210,16 +206,14 @@ class Sheet:
 
     def save(self, filename):
         text = self.xml()
-        f = open(filename, "w")
-        f.write(text)
-        if text and not text.endswith('\n'):
-            f.write('\n')
-        f.close()
+        with open(filename, "w") as f:
+            f.write(text)
+            if text and not text.endswith('\n'):
+                f.write('\n')
 
     def load(self, filename):
-        f = open(filename, 'r')
-        SheetParser(self).parsefile(f)
-        f.close()
+        with open(filename, 'r') as f:
+            SheetParser(self).parsefile(f)
 
 class SheetParser:
 
@@ -234,8 +228,7 @@ class SheetParser:
         parser.ParseFile(f)
 
     def startelement(self, tag, attrs):
-        method = getattr(self, 'start_'+tag, None)
-        if method:
+        if method := getattr(self, f'start_{tag}', None):
             for key, value in attrs.iteritems():
                 attrs[key] = str(value) # XXX Convert Unicode to 8-bit
             method(attrs)
@@ -246,8 +239,7 @@ class SheetParser:
         self.texts.append(text)
 
     def endelement(self, tag):
-        method = getattr(self, 'end_'+tag, None)
-        if method:
+        if method := getattr(self, f'end_{tag}', None):
             method("".join(self.texts))
 
     def start_cell(self, attrs):
@@ -342,26 +334,23 @@ class NumericCell(BaseCell):
         return text, self.alignment
 
     def xml(self):
-        method = getattr(self, '_xml_' + type(self.value).__name__)
-        return '<value align="%s" format="%s">%s</value>' % (
-                align2xml[self.alignment],
-                self.fmt,
-                method())
+        method = getattr(self, f'_xml_{type(self.value).__name__}')
+        return f'<value align="{align2xml[self.alignment]}" format="{self.fmt}">{method()}</value>'
 
     def _xml_int(self):
         if -2**31 <= self.value < 2**31:
-            return '<int>%s</int>' % self.value
+            return f'<int>{self.value}</int>'
         else:
             return self._xml_long()
 
     def _xml_long(self):
-        return '<long>%s</long>' % self.value
+        return f'<long>{self.value}</long>'
 
     def _xml_float(self):
-        return '<double>%s</double>' % repr(self.value)
+        return f'<double>{repr(self.value)}</double>'
 
     def _xml_complex(self):
-        return '<complex>%s</double>' % repr(self.value)
+        return f'<complex>{repr(self.value)}</double>'
 
 class StringCell(BaseCell):
 
@@ -402,15 +391,16 @@ class FormulaCell(BaseCell):
         if self.value is None:
             try:
                 # A hack to evaluate expressions using true division
-                rexec.r_exec("from __future__ import division\n" +
-                             "__value__ = eval(%s)" % repr(self.translated))
+                rexec.r_exec(
+                    (
+                        "from __future__ import division\n"
+                        + f"__value__ = eval({repr(self.translated)})"
+                    )
+                )
                 self.value = rexec.r_eval("__value__")
             except:
                 exc = sys.exc_info()[0]
-                if hasattr(exc, "__name__"):
-                    self.value = exc.__name__
-                else:
-                    self.value = str(exc)
+                self.value = exc.__name__ if hasattr(exc, "__name__") else str(exc)
         return self.value
 
     def format(self):
@@ -421,10 +411,7 @@ class FormulaCell(BaseCell):
         return text, self.alignment
 
     def xml(self):
-        return '<formula align="%s" format="%s">%s</formula>' % (
-            align2xml[self.alignment],
-            self.fmt,
-            self.formula)
+        return f'<formula align="{align2xml[self.alignment]}" format="{self.fmt}">{self.formula}</formula>'
 
     def renumber(self, x1, y1, x2, y2, dx, dy):
         out = []
@@ -455,10 +442,10 @@ def translate(formula):
             x1, y1, x2, y2 = m.groups()
             x1 = colname2num(x1)
             if x2 is None:
-                s = "cell(%s, %s)" % (x1, y1)
+                s = f"cell({x1}, {y1})"
             else:
                 x2 = colname2num(x2)
-                s = "cells(%s, %s, %s, %s)" % (x1, y1, x2, y2)
+                s = f"cells({x1}, {y1}, {x2}, {y2})"
             out.append(s)
     return "".join(out)
 
@@ -520,7 +507,7 @@ class SheetGUI:
         columns = max(columns, maxx)
         # Create the widgets
         self.root = Tk.Tk()
-        self.root.wm_title("Spreadsheet: %s" % self.filename)
+        self.root.wm_title(f"Spreadsheet: {self.filename}")
         self.beacon = Tk.Label(self.root, text="A1",
                                font=('helvetica', 16, 'bold'))
         self.entry = Tk.Entry(self.root)
@@ -566,7 +553,7 @@ class SheetGUI:
         if cell is None:
             text = ""
         elif isinstance(cell, FormulaCell):
-            text = '=' + cell.formula
+            text = f'={cell.formula}'
         else:
             text, alignment = cell.format()
         self.entry.delete(0, 'end')
@@ -711,33 +698,31 @@ class SheetGUI:
         if x1 == y1 == 1 and x2 == y2 == sys.maxint:
             name = ":"
         elif (x1, x2) == (1, sys.maxint):
-            if y1 == y2:
-                name = "%d" % y1
-            else:
-                name = "%d:%d" % (y1, y2)
+            name = "%d" % y1 if y1 == y2 else "%d:%d" % (y1, y2)
         elif (y1, y2) == (1, sys.maxint):
             if x1 == x2:
-                name = "%s" % colnum2name(x1)
+                name = f"{colnum2name(x1)}"
             else:
-                name = "%s:%s" % (colnum2name(x1), colnum2name(x2))
+                name = f"{colnum2name(x1)}:{colnum2name(x2)}"
         else:
             name1 = cellname(*self.currentxy)
             name2 = cellname(*self.cornerxy)
-            name = "%s:%s" % (name1, name2)
+            name = f"{name1}:{name2}"
         self.beacon['text'] = name
 
 
     def clearfocus(self):
-        if self.currentxy is not None:
-            x1, y1 = self.currentxy
-            x2, y2 = self.cornerxy or self.currentxy
-            if x1 > x2:
-                x1, x2 = x2, x1
-            if y1 > y2:
-                y1, y2 = y2, y1
-            for (x, y), cell in self.gridcells.iteritems():
-                if x1 <= x <= x2 and y1 <= y <= y2:
-                    cell['bg'] = 'white'
+        if self.currentxy is None:
+            return
+        x1, y1 = self.currentxy
+        x2, y2 = self.cornerxy or self.currentxy
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+        for (x, y), cell in self.gridcells.iteritems():
+            if x1 <= x <= x2 and y1 <= y <= y2:
+                cell['bg'] = 'white'
 
     def return_event(self, event):
         "Callback for the Return key."
@@ -822,7 +807,7 @@ def test_basic():
             else:
                 c1 = cellname(x, 1)
                 c2 = cellname(1, y)
-                formula = "%s*%s" % (c1, c2)
+                formula = f"{c1}*{c2}"
                 cell = FormulaCell(formula)
             a.setcell(x, y, cell)
 ##    if os.path.isfile("sheet1.xml"):
@@ -833,10 +818,7 @@ def test_basic():
 
 def test_gui():
     "GUI test."
-    if sys.argv[1:]:
-        filename = sys.argv[1]
-    else:
-        filename = "sheet1.xml"
+    filename = sys.argv[1] if sys.argv[1:] else "sheet1.xml"
     g = SheetGUI(filename)
     g.root.mainloop()
 

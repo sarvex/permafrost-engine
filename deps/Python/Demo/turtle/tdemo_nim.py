@@ -37,8 +37,7 @@ def computerzug(state):
     for z in range(3):
         s = state[z] ^ xored
         if s <= state[z]:
-            move = (z, s)
-            return move
+            return z, s
 
 def randommove(state):
     m = max(state)

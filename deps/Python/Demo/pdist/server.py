@@ -62,9 +62,7 @@ class Server:
 
     def _verify(self, conn, address):
         host, port = address
-        for pat in self._valid:
-            if fnmatch(host, pat): return 1
-        return 0
+        return next((1 for pat in self._valid if fnmatch(host, pat)), 0)
 
     def _dorequest(self, rf, wf):
         rp = pickle.Unpickler(rf)
@@ -97,7 +95,7 @@ class Server:
             if not hasattr(self, '_methods'):
                 self._methods = tuple(self._listmethods())
             return self._methods
-        raise NameError, "unrecognized special method name %s" % repr(methodname)
+        raise (NameError, f"unrecognized special method name {repr(methodname)}")
 
     def _listmethods(self, cl=None):
         if not cl: cl = self.__class__

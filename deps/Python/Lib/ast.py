@@ -59,8 +59,10 @@ def literal_eval(node_or_string):
         elif isinstance(node, List):
             return list(map(_convert, node.elts))
         elif isinstance(node, Dict):
-            return dict((_convert(k), _convert(v)) for k, v
-                        in zip(node.keys, node.values))
+            return {
+                _convert(k): _convert(v)
+                for k, v in zip(node.keys, node.values)
+            }
         elif isinstance(node, Name):
             if node.id in _safe_names:
                 return _safe_names[node.id]
@@ -72,11 +74,9 @@ def literal_eval(node_or_string):
              isinstance(node.left.n, (int, long, float)):
             left = node.left.n
             right = node.right.n
-            if isinstance(node.op, Add):
-                return left + right
-            else:
-                return left - right
+            return left + right if isinstance(node.op, Add) else left - right
         raise ValueError('malformed string')
+
     return _convert(node_or_string)
 
 
@@ -99,12 +99,12 @@ def dump(node, annotate_fields=True, include_attributes=False):
             ))
             if include_attributes and node._attributes:
                 rv += fields and ', ' or ' '
-                rv += ', '.join('%s=%s' % (a, _format(getattr(node, a)))
-                                for a in node._attributes)
-            return rv + ')'
+                rv += ', '.join(f'{a}={_format(getattr(node, a))}' for a in node._attributes)
+            return f'{rv})'
         elif isinstance(node, list):
-            return '[%s]' % ', '.join(_format(x) for x in node)
+            return f"[{', '.join(_format(x) for x in node)}]"
         return repr(node)
+
     if not isinstance(node, AST):
         raise TypeError('expected AST, got %r' % node.__class__.__name__)
     return _format(node)
@@ -236,7 +236,7 @@ class NodeVisitor(object):
 
     def visit(self, node):
         """Visit a node."""
-        method = 'visit_' + node.__class__.__name__
+        method = f'visit_{node.__class__.__name__}'
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node)
 

@@ -264,22 +264,19 @@ class simple_producer:
         self.data = data
         self.buffer_size = buffer_size
 
-    def more (self):
+    def more(self):
         if len (self.data) > self.buffer_size:
             result = self.data[:self.buffer_size]
             self.data = self.data[self.buffer_size:]
-            return result
         else:
             result = self.data
             self.data = ''
-            return result
+
+        return result
 
 class fifo:
-    def __init__ (self, list=None):
-        if not list:
-            self.list = deque()
-        else:
-            self.list = deque(list)
+    def __init__(self, list=None):
+        self.list = deque() if not list else deque(list)
 
     def __len__ (self):
         return len(self.list)
@@ -293,11 +290,8 @@ class fifo:
     def push (self, data):
         self.list.append(data)
 
-    def pop (self):
-        if self.list:
-            return (1, self.list.popleft())
-        else:
-            return (0, None)
+    def pop(self):
+        return (1, self.list.popleft()) if self.list else (0, None)
 
 # Given 'haystack', see if any prefix of 'needle' is at its end.  This
 # assumes an exact match has already been checked.  Return the number of

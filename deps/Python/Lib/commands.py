@@ -38,7 +38,7 @@ def getstatus(file):
     """Return output of "ls -ld <file>" in a string."""
     import warnings
     warnings.warn("commands.getstatus() is deprecated", DeprecationWarning, 2)
-    return getoutput('ls -ld' + mkarg(file))
+    return getoutput(f'ls -ld{mkarg(file)}')
 
 
 # Get the output from a shell command into a string.
@@ -86,5 +86,5 @@ def mkarg(x):
         if c in '\\$"`':
             s = s + '\\'
         s = s + c
-    s = s + '"'
+    s = f'{s}"'
     return s

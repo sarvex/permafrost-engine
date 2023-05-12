@@ -82,7 +82,7 @@ def main(win):
         ypos[j] = y
 
         ch = stdscr.getch()
-        if ch == ord('q') or ch == ord('Q'):
+        if ch in [ord('q'), ord('Q')]:
             return
         elif ch == ord('s'):
             stdscr.nodelay(0)

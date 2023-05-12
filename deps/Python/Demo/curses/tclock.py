@@ -10,8 +10,7 @@ import curses, time
 ASPECT = 2.2
 
 def sign(_x):
-    if _x < 0: return -1
-    return 1
+    return -1 if _x < 0 else 1
 
 def A2XY(angle, radius):
     return (int(round(ASPECT * radius * sin(angle))),

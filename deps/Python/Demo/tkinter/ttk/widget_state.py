@@ -1,11 +1,11 @@
 """Sample demo showing widget states and some font styling."""
+
 import ttk
 
 states = ['active', 'disabled', 'focus', 'pressed', 'selected',
           'background', 'readonly', 'alternate', 'invalid']
 
-for state in states[:]:
-    states.append("!" + state)
+states.extend(f"!{state}" for state in states[:])
 
 def reset_state(widget):
     nostate = states[len(states) // 2:]
@@ -20,8 +20,8 @@ class App(ttk.Frame):
 
         # get default font size and family
         btn_font = self.style.lookup("TButton", "font")
-        fsize = str(self.tk.eval("font configure %s -size" % btn_font))
-        self.font_family = self.tk.eval("font configure %s -family" % btn_font)
+        fsize = str(self.tk.eval(f"font configure {btn_font} -size"))
+        self.font_family = self.tk.eval(f"font configure {btn_font} -family")
         if ' ' in self.font_family:
             self.font_family = '{%s}' % self.font_family
         self.fsize_prefix = fsize[0] if fsize[0] == '-' else ''

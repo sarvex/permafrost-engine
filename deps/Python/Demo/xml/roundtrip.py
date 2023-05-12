@@ -21,13 +21,13 @@ class ContentGenerator(handler.ContentHandler):
         self._out.write('<?xml version="1.0" encoding="iso-8859-1"?>\n')
 
     def startElement(self, name, attrs):
-        self._out.write('<' + name)
+        self._out.write(f'<{name}')
         for (name, value) in attrs.items():
-            self._out.write(' %s="%s"' % (name, saxutils.escape(value)))
+            self._out.write(f' {name}="{saxutils.escape(value)}"')
         self._out.write('>')
 
     def endElement(self, name):
-        self._out.write('</%s>' % name)
+        self._out.write(f'</{name}>')
 
     def characters(self, content):
         self._out.write(saxutils.escape(content))
@@ -36,7 +36,7 @@ class ContentGenerator(handler.ContentHandler):
         self._out.write(content)
 
     def processingInstruction(self, target, data):
-        self._out.write('<?%s %s?>' % (target, data))
+        self._out.write(f'<?{target} {data}?>')
 
 # --- The main program
 

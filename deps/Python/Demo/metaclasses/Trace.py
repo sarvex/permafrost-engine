@@ -73,7 +73,7 @@ class TracingInstance:
         if type(raw) != types.FunctionType:
             return raw
         # It's a function
-        fullname = self.__class.__name__ + "." + name
+        fullname = f"{self.__class.__name__}.{name}"
         if not self.__trace_output__ or name == '__trace_call__':
             return NotTracingWrapper(fullname, raw, self)
         else:

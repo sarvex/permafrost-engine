@@ -57,17 +57,17 @@ class ServerHTMLDoc(pydoc.HTMLDoc):
             all, scheme, rfc, pep, selfdot, name = match.groups()
             if scheme:
                 url = escape(all).replace('"', '&quot;')
-                results.append('<a href="%s">%s</a>' % (url, url))
+                results.append(f'<a href="{url}">{url}</a>')
             elif rfc:
                 url = 'http://www.rfc-editor.org/rfc/rfc%d.txt' % int(rfc)
-                results.append('<a href="%s">%s</a>' % (url, escape(all)))
+                results.append(f'<a href="{url}">{escape(all)}</a>')
             elif pep:
                 url = 'http://www.python.org/dev/peps/pep-%04d/' % int(pep)
-                results.append('<a href="%s">%s</a>' % (url, escape(all)))
+                results.append(f'<a href="{url}">{escape(all)}</a>')
             elif text[end:end+1] == '(':
                 results.append(self.namelink(name, methods, funcs, classes))
             elif selfdot:
-                results.append('self.<strong>%s</strong>' % name)
+                results.append(f'self.<strong>{name}</strong>')
             else:
                 results.append(self.namelink(name, classes))
             here = end
@@ -81,8 +81,7 @@ class ServerHTMLDoc(pydoc.HTMLDoc):
         anchor = (cl and cl.__name__ or '') + '-' + name
         note = ''
 
-        title = '<a name="%s"><strong>%s</strong></a>' % (
-            self.escape(anchor), self.escape(name))
+        title = f'<a name="{self.escape(anchor)}"><strong>{self.escape(name)}</strong></a>'
 
         if inspect.ismethod(object):
             args, varargs, varkw, defaults = inspect.getargspec(object.im_func)
@@ -108,12 +107,15 @@ class ServerHTMLDoc(pydoc.HTMLDoc):
         else:
             docstring = pydoc.getdoc(object)
 
-        decl = title + argspec + (note and self.grey(
-               '<font face="helvetica, arial">%s</font>' % note))
+        decl = (
+            title
+            + argspec
+            + (note and self.grey(f'<font face="helvetica, arial">{note}</font>'))
+        )
 
         doc = self.markup(
             docstring, self.preformat, funcs, classes, methods)
-        doc = doc and '<dd><tt>%s</tt></dd>' % doc
+        doc = doc and f'<dd><tt>{doc}</tt></dd>'
         return '<dl><dt>%s</dt>%s</dl>\n' % (decl, doc)
 
     def docserver(self, server_name, package_documentation, methods):
@@ -121,25 +123,24 @@ class ServerHTMLDoc(pydoc.HTMLDoc):
 
         fdict = {}
         for key, value in methods.items():
-            fdict[key] = '#-' + key
+            fdict[key] = f'#-{key}'
             fdict[value] = fdict[key]
 
         server_name = self.escape(server_name)
-        head = '<big><big><strong>%s</strong></big></big>' % server_name
+        head = f'<big><big><strong>{server_name}</strong></big></big>'
         result = self.heading(head, '#ffffff', '#7799ee')
 
         doc = self.markup(package_documentation, self.preformat, fdict)
-        doc = doc and '<tt>%s</tt>' % doc
+        doc = doc and f'<tt>{doc}</tt>'
         result = result + '<p>%s</p>\n' % doc
 
-        contents = []
         method_items = sorted(methods.items())
-        for key, value in method_items:
-            contents.append(self.docroutine(value, key, funcs=fdict))
-        result = result + self.bigsection(
-            'Methods', '#ffffff', '#eeaa77', pydoc.join(contents))
-
-        return result
+        contents = [
+            self.docroutine(value, key, funcs=fdict) for key, value in method_items
+        ]
+        return result + self.bigsection(
+            'Methods', '#ffffff', '#eeaa77', pydoc.join(contents)
+        )
 
 class XMLRPCDocGenerator:
     """Generates documentation for an XML-RPC server.
@@ -195,9 +196,11 @@ class XMLRPCDocGenerator:
                     method_info[1] = self.instance._methodHelp(method_name)
 
                 method_info = tuple(method_info)
-                if method_info != (None, None):
+                if method_info != (None, None) or hasattr(
+                    self.instance, '_dispatch'
+                ):
                     method = method_info
-                elif not hasattr(self.instance, '_dispatch'):
+                else:
                     try:
                         method = resolve_dotted_attribute(
                                     self.instance,
@@ -205,11 +208,9 @@ class XMLRPCDocGenerator:
                                     )
                     except AttributeError:
                         method = method_info
-                else:
-                    method = method_info
             else:
                 assert 0, "Could not find method in self.functions and no "\
-                          "instance installed"
+                              "instance installed"
 
             methods[method_name] = method
 

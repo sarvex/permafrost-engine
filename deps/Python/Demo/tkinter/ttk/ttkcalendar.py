@@ -59,7 +59,7 @@ class Calendar(ttk.Frame):
 
     def __setitem__(self, item, value):
         if item in ('year', 'month'):
-            raise AttributeError("attribute '%s' is not writeable" % item)
+            raise AttributeError(f"attribute '{item}' is not writeable")
         elif item == 'selectbackground':
             self._canvas['background'] = value
         elif item == 'selectforeground':
@@ -81,9 +81,9 @@ class Calendar(ttk.Frame):
     def __setup_styles(self):
         # custom ttk styles
         style = ttk.Style(self.master)
-        arrow_layout = lambda dir: (
-            [('Button.focus', {'children': [('Button.%sarrow' % dir, None)]})]
-        )
+        arrow_layout = lambda dir: [
+            ('Button.focus', {'children': [(f'Button.{dir}arrow', None)]})
+        ]
         style.layout('L.TButton', arrow_layout('left'))
         style.layout('R.TButton', arrow_layout('right'))
 
@@ -164,7 +164,7 @@ class Calendar(ttk.Frame):
         item = widget.identify_row(y)
         column = widget.identify_column(x)
 
-        if not column or not item in self._items:
+        if not column or item not in self._items:
             # clicked in the weekdays row or just outside the columns
             return
 

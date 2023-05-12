@@ -39,12 +39,12 @@ d - delete disappearing files, either remote or local
     raw_input("[Return to exit] ")
 
 def ask(prompt, default):
-    s = raw_input("%s [%s] " % (prompt, default))
+    s = raw_input(f"{prompt} [{default}] ")
     return s or default
 
 def askint(prompt, default):
-    s = raw_input("%s [%s] " % (prompt, str(default)))
-    if s: return string.atoi(s)
+    if s := raw_input(f"{prompt} [{str(default)}] "):
+        return string.atoi(s)
     return default
 
 def compare(local, remote, mode):

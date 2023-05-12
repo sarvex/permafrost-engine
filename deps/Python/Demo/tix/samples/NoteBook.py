@@ -22,14 +22,11 @@ def RunSample(w):
     # We use these options to set the sizes of the subwidgets inside the
     # notebook, so that they are well-aligned on the screen.
     prefix = Tix.OptionName(w)
-    if prefix:
-        prefix = '*'+prefix
-    else:
-        prefix = ''
-    w.option_add(prefix+'*TixControl*entry.width', 10)
-    w.option_add(prefix+'*TixControl*label.width', 18)
-    w.option_add(prefix+'*TixControl*label.anchor', Tix.E)
-    w.option_add(prefix+'*TixNoteBook*tagPadX', 8)
+    prefix = f'*{prefix}' if prefix else ''
+    w.option_add(f'{prefix}*TixControl*entry.width', 10)
+    w.option_add(f'{prefix}*TixControl*label.width', 18)
+    w.option_add(f'{prefix}*TixControl*label.anchor', Tix.E)
+    w.option_add(f'{prefix}*TixNoteBook*tagPadX', 8)
 
     # Create the notebook widget and set its backpagecolor to gray.
     # Note that the -backpagecolor option belongs to the "nbframe"

@@ -24,10 +24,10 @@ def main():
         if not file: break
         revs = []
         while 1:
-            rev = getnextrev(f, file)
-            if not rev:
+            if rev := getnextrev(f, file):
+                revs.append(rev)
+            else:
                 break
-            revs.append(rev)
         if revs:
             allrevs[len(allrevs):] = revs
     allrevs.sort()

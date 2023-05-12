@@ -47,10 +47,11 @@ del foundman3dir
 
 def listmanpages(mandir):
     files = os.listdir(mandir)
-    names = []
-    for file in files:
-        if file[-2:-1] == '.' and  (file[-1] in 'ln123456789'):
-            names.append(file[:-2])
+    names = [
+        file[:-2]
+        for file in files
+        if file[-2:-1] == '.' and (file[-1] in 'ln123456789')
+    ]
     names.sort()
     return names
 
@@ -189,15 +190,14 @@ class SelectionBox:
         # Else return None, meaning not a unique selection
 
     def update(self):
-        name = self.updatelist()
-        if name:
+        if name := self.updatelist():
             self.show_page(name)
             self.entry.delete(0, AtEnd())
             self.updatelist()
 
     def show_page(self, name):
-        file = '%s/%s.?' % (self.chaptervar.get(), name)
-        fp = os.popen('nroff -man %s | ul -i' % file, 'r')
+        file = f'{self.chaptervar.get()}/{name}.?'
+        fp = os.popen(f'nroff -man {file} | ul -i', 'r')
         self.text.kill()
         self.title['text'] = name
         self.text.parsefile(fp)

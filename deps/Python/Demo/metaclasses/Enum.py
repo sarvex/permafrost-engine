@@ -77,12 +77,12 @@ class EnumMetaClass:
     def __repr__(self):
         s = self.__name__
         if self.__bases__:
-            s = s + '(' + string.join(map(lambda x: x.__name__,
-                                          self.__bases__), ", ") + ')'
+            s = (
+                f'{s}('
+                + string.join(map(lambda x: x.__name__, self.__bases__), ", ")
+            ) + ')'
         if self.__dict:
-            list = []
-            for key, value in self.__dict.items():
-                list.append("%s: %s" % (key, int(value)))
+            list = [f"{key}: {int(value)}" for key, value in self.__dict.items()]
             s = "%s: {%s}" % (s, string.join(list, ", "))
         return s
 
@@ -112,7 +112,7 @@ class EnumInstance:
                                              self.__value)
 
     def __str__(self):
-        return "%s.%s" % (self.__classname, self.__enumname)
+        return f"{self.__classname}.{self.__enumname}"
 
     def __cmp__(self, other):
         return cmp(self.__value, int(other))

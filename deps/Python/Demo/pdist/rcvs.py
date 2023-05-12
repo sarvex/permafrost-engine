@@ -195,9 +195,8 @@ class MyFile(File):
 
     def get(self):
         data = self.proxy.get(self.file)
-        f = open(self.file, 'w')
-        f.write(data)
-        f.close()
+        with open(self.file, 'w') as f:
+            f.write(data)
         self.setentry(self.rrev, self.rsum)
 
     def log(self, otherflags):
@@ -309,7 +308,7 @@ class RCVS(CVS):
     def log(self, files, opts):
         flags = ''
         for o, a in opts:
-            flags = flags + ' ' + o + a
+            flags = f'{flags} {o}{a}'
         for e in self.whichentries(files):
             e.log(flags)
 

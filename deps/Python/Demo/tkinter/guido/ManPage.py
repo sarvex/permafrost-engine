@@ -189,20 +189,17 @@ ManPage = ReadonlyManPage
 def test():
     import os
     import sys
-    # XXX This directory may be different on your system
-    MANDIR = '/usr/local/man/mann'
     DEFAULTPAGE = 'Tcl'
     formatted = 0
     if sys.argv[1:] and sys.argv[1] == '-f':
         formatted = 1
         del sys.argv[1]
-    if sys.argv[1:]:
-        name = sys.argv[1]
-    else:
-        name = DEFAULTPAGE
+    name = sys.argv[1] if sys.argv[1:] else DEFAULTPAGE
     if not formatted:
         if name[-2:-1] != '.':
-            name = name + '.n'
+            name = f'{name}.n'
+        # XXX This directory may be different on your system
+        MANDIR = '/usr/local/man/mann'
         name = os.path.join(MANDIR, name)
     root = Tk()
     root.minsize(1, 1)
@@ -211,7 +208,7 @@ def test():
     if formatted:
         fp = open(name, 'r')
     else:
-        fp = os.popen('nroff -man %s | ul -i' % name, 'r')
+        fp = os.popen(f'nroff -man {name} | ul -i', 'r')
     manpage.parsefile(fp)
     root.mainloop()
 

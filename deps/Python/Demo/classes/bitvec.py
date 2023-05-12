@@ -42,8 +42,7 @@ def _check_key(len, key):
 def _check_slice(len, i, j):
     #the type is ok, Python already checked that
     i, j = max(i, 0), min(len, j)
-    if i > j:
-        i = j
+    i = min(i, j)
     return i, j
 
 
@@ -104,10 +103,7 @@ class BitVec:
 
     def count(self, value):
         #_check_value(value)
-        if value:
-            data = self._data
-        else:
-            data = (~self)._data
+        data = self._data if value else (~self)._data
         count = 0
         while data:
             data, count = data >> 1, count + (data & 1 != 0)
@@ -116,10 +112,7 @@ class BitVec:
 
     def index(self, value):
         #_check_value(value):
-        if value:
-            data = self._data
-        else:
-            data = (~self)._data
+        data = self._data if value else (~self)._data
         index = 0
         if not data:
             raise ValueError, 'list.index(x): x not in list'
@@ -160,10 +153,7 @@ class BitVec:
 
 
     def seq(self):
-        result = []
-        for i in self:
-            result.append(i)
-        return result
+        return list(self)
 
 
     def __repr__(self):
@@ -181,15 +171,14 @@ class BitVec:
         if length != other._len:
             min_length = min(length, other._len)
             return cmp(self[:min_length], other[:min_length]) or \
-                      cmp(self[min_length:], other[min_length:])
+                          cmp(self[min_length:], other[min_length:])
         #the lengths are the same now...
         if self._data == other._data:
             return 0
         if length == 1:
             return cmp(self[0], other[0])
-        else:
-            length = length >> 1
-            return cmp(self[:length], other[:length]) or \
+        length = length >> 1
+        return cmp(self[:length], other[:length]) or \
                       cmp(self[length:], other[length:])
 
 

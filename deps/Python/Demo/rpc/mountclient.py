@@ -44,10 +44,7 @@ class MountUnpacker(Unpacker):
 
     def unpack_fhstatus(self):
         status = self.unpack_uint()
-        if status == 0:
-            fh = self.unpack_fhandle()
-        else:
-            fh = None
+        fh = self.unpack_fhandle() if status == 0 else None
         return status, fh
 
     def unpack_mountlist(self):

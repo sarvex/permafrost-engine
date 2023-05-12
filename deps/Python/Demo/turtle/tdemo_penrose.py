@@ -104,12 +104,12 @@ def draw(l, n, th=2):
         stamp()
 
 def sun(l, n):
-    for i in range(5):
+    for _ in range(5):
         inflatekite(l, n)
         lt(72)
 
 def star(l,n):
-    for i in range(5):
+    for _ in range(5):
         inflatedart(l, n)
         lt(72)
 

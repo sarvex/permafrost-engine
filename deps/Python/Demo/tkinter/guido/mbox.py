@@ -279,7 +279,8 @@ def rescan():
 
 def scanfolder(folder = 'inbox', sequence = 'all'):
     return map(
-            lambda line: line[:-1],
-            os.popen('scan +%s %s' % (folder, sequence), 'r').readlines())
+        lambda line: line[:-1],
+        os.popen(f'scan +{folder} {sequence}', 'r').readlines(),
+    )
 
 main()

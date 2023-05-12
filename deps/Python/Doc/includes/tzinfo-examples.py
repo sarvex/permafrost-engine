@@ -44,26 +44,16 @@ class FixedOffset(tzinfo):
 import time as _time
 
 STDOFFSET = timedelta(seconds = -_time.timezone)
-if _time.daylight:
-    DSTOFFSET = timedelta(seconds = -_time.altzone)
-else:
-    DSTOFFSET = STDOFFSET
-
+DSTOFFSET = timedelta(seconds=-_time.altzone) if _time.daylight else STDOFFSET
 DSTDIFF = DSTOFFSET - STDOFFSET
 
 class LocalTimezone(tzinfo):
 
     def utcoffset(self, dt):
-        if self._isdst(dt):
-            return DSTOFFSET
-        else:
-            return STDOFFSET
+        return DSTOFFSET if self._isdst(dt) else STDOFFSET
 
     def dst(self, dt):
-        if self._isdst(dt):
-            return DSTDIFF
-        else:
-            return ZERO
+        return DSTDIFF if self._isdst(dt) else ZERO
 
     def tzname(self, dt):
         return _time.tzname[self._isdst(dt)]
@@ -82,8 +72,7 @@ Local = LocalTimezone()
 # A complete implementation of current DST rules for major US time zones.
 
 def first_sunday_on_or_after(dt):
-    days_to_go = 6 - dt.weekday()
-    if days_to_go:
+    if days_to_go := 6 - dt.weekday():
         dt += timedelta(days_to_go)
     return dt
 
@@ -125,10 +114,7 @@ class USTimeZone(tzinfo):
         return self.reprname
 
     def tzname(self, dt):
-        if self.dst(dt):
-            return self.dstname
-        else:
-            return self.stdname
+        return self.dstname if self.dst(dt) else self.stdname
 
     def utcoffset(self, dt):
         return self.stdoffset + self.dst(dt)
@@ -144,7 +130,7 @@ class USTimeZone(tzinfo):
 
         # Find start and end times for US DST. For years before 1967, return
         # ZERO for no DST.
-        if 2006 < dt.year:
+        if dt.year > 2006:
             dststart, dstend = DSTSTART_2007, DSTEND_2007
         elif 1986 < dt.year < 2007:
             dststart, dstend = DSTSTART_1987_2006, DSTEND_1987_2006
@@ -158,10 +144,7 @@ class USTimeZone(tzinfo):
 
         # Can't compare naive to aware objects, so strip the timezone from
         # dt first.
-        if start <= dt.replace(tzinfo=None) < end:
-            return HOUR
-        else:
-            return ZERO
+        return HOUR if start <= dt.replace(tzinfo=None) < end else ZERO
 
 Eastern  = USTimeZone(-5, "Eastern",  "EST", "EDT")
 Central  = USTimeZone(-6, "Central",  "CST", "CDT")

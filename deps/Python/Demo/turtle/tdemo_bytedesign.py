@@ -32,7 +32,7 @@ class Designer(Turtle):
 
     def design(self, homePos, scale):
         self.up()
-        for i in range(5):
+        for _ in range(5):
             self.forward(64.65 * scale)
             self.down()
             self.wheel(self.position(), scale)
@@ -50,14 +50,14 @@ class Designer(Turtle):
 
     def wheel(self, initpos, scale):
         self.right(54)
-        for i in range(4):
+        for _ in range(4):
             self.pentpiece(initpos, scale)
         self.down()
         self.left(36)
-        for i in range(5):
+        for _ in range(5):
             self.tripiece(initpos, scale)
         self.left(36)
-        for i in range(5):
+        for _ in range(5):
             self.down()
             self.right(72)
             self.forward(28 * scale)
@@ -88,7 +88,7 @@ class Designer(Turtle):
         self.up()
         self.forward(29 * scale)
         self.down()
-        for i in range(5):
+        for _ in range(5):
             self.forward(18 * scale)
             self.right(72)
         self.pentr(18 * scale, 75, scale)
@@ -97,7 +97,7 @@ class Designer(Turtle):
         self.setheading(oldh)
         self.forward(29 * scale)
         self.down()
-        for i in range(5):
+        for _ in range(5):
             self.forward(18 * scale)
             self.right(72)
         self.pentl(18 * scale, 75, scale)

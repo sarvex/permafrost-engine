@@ -61,8 +61,7 @@ _INT_TYPES = type(1), type(1L)
 
 def _is_leap(year):           # 1 if leap year, else 0
     if year % 4 != 0: return 0
-    if year % 400 == 0: return 1
-    return year % 100 != 0
+    return 1 if year % 400 == 0 else year % 100 != 0
 
 def _days_in_year(year):      # number of days in year
     return 365 + _is_leap(year)
@@ -71,8 +70,7 @@ def _days_before_year(year):  # number of days before year
     return year*365L + (year+3)//4 - (year+99)//100 + (year+399)//400
 
 def _days_in_month(month, year):      # number of days in month of year
-    if month == 2 and _is_leap(year): return 29
-    return _DAYS_IN_MONTH[month-1]
+    return 29 if month == 2 and _is_leap(year) else _DAYS_IN_MONTH[month-1]
 
 def _days_before_month(month, year):  # number of days in year before month
     return _DAYS_BEFORE_MONTH[month-1] + (month > 2 and _is_leap(year))
@@ -130,7 +128,7 @@ class Date:
     # don't allow setting existing attributes
     def __setattr__(self, name, value):
         if self.__dict__.has_key(name):
-            raise AttributeError, 'read-only attribute ' + name
+            raise (AttributeError, f'read-only attribute {name}')
         self.__dict__[name] = value
 
     def __cmp__(self, other):

@@ -106,9 +106,9 @@ def parent(s):
 def child(s):
     # read stdin, write socket
     while 1:
-        line = sys.stdin.readline()
-##              print 'Got:', repr(line)
-        if not line: break
-        s.send(line)
+        if line := sys.stdin.readline():
+            s.send(line)
+        else:
+            break
 
 main()

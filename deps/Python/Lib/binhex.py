@@ -62,10 +62,7 @@ try:
         return file, finfo, dlen, rlen
 
     def openrsrc(name, *mode):
-        if not mode:
-            mode = '*rb'
-        else:
-            mode = '*' + mode[0]
+        mode = '*rb' if not mode else f'*{mode[0]}'
         return openrf(name, mode)
 
 except ImportError:
@@ -81,17 +78,15 @@ except ImportError:
 
     def getfileinfo(name):
         finfo = FInfo()
-        # Quick check for textfile
-        fp = open(name)
-        data = open(name).read(256)
-        for c in data:
-            if not c.isspace() and (c<' ' or ord(c) > 0x7f):
-                break
-        else:
-            finfo.Type = 'TEXT'
-        fp.seek(0, 2)
-        dsize = fp.tell()
-        fp.close()
+        with open(name) as fp:
+            data = open(name).read(256)
+            for c in data:
+                if not c.isspace() and (c<' ' or ord(c) > 0x7f):
+                    break
+            else:
+                finfo.Type = 'TEXT'
+            fp.seek(0, 2)
+            dsize = fp.tell()
         dir, file = os.path.split(name)
         file = file.replace(':', '-', 1)
         return file, finfo, dsize, 0
@@ -208,10 +203,7 @@ class BinHex:
     def _writecrc(self):
         # XXXX Should this be here??
         # self.crc = binascii.crc_hqx('\0\0', self.crc)
-        if self.crc < 0:
-            fmt = '>h'
-        else:
-            fmt = '>H'
+        fmt = '>h' if self.crc < 0 else '>H'
         self.ofp.write(struct.pack(fmt, self.crc))
         self.crc = 0
 
@@ -258,20 +250,20 @@ def binhex(inp, out):
     finfo = getfileinfo(inp)
     ofp = BinHex(finfo, out)
 
-    ifp = open(inp, 'rb')
-    # XXXX Do textfile translation on non-mac systems
-    while 1:
-        d = ifp.read(128000)
-        if not d: break
-        ofp.write(d)
-    ofp.close_data()
-    ifp.close()
-
+    with open(inp, 'rb') as ifp:
+            # XXXX Do textfile translation on non-mac systems
+        while 1:
+            if d := ifp.read(128000):
+                ofp.write(d)
+            else:
+                break
+        ofp.close_data()
     ifp = openrsrc(inp, 'rb')
     while 1:
-        d = ifp.read(128000)
-        if not d: break
-        ofp.write_rsrc(d)
+        if d := ifp.read(128000):
+            ofp.write_rsrc(d)
+        else:
+            break
     ofp.close()
     ifp.close()
 
@@ -301,15 +293,15 @@ class _Hqxdecoderengine:
             while 1:
                 try:
                     decdatacur, self.eof = \
-                            binascii.a2b_hqx(data)
+                                binascii.a2b_hqx(data)
                     break
                 except binascii.Incomplete:
                     pass
-                newdata = self.ifp.read(1)
-                if not newdata:
+                if newdata := self.ifp.read(1):
+                    data = data + newdata
+                else:
                     raise Error, \
-                          'Premature EOF on binhex file'
-                data = data + newdata
+                              'Premature EOF on binhex file'
             decdata = decdata + decdatacur
             wtd = totalwtd - len(decdata)
             if not decdata and not self.eof:
@@ -339,7 +331,7 @@ class _Rledecoderengine:
         self.pre_buffer = self.pre_buffer + self.ifp.read(wtd+4)
         if self.ifp.eof:
             self.post_buffer = self.post_buffer + \
-                binascii.rledecode_hqx(self.pre_buffer)
+                    binascii.rledecode_hqx(self.pre_buffer)
             self.pre_buffer = ''
             return
 
@@ -356,18 +348,16 @@ class _Rledecoderengine:
         #
         mark = len(self.pre_buffer)
         if self.pre_buffer[-3:] == RUNCHAR + '\0' + RUNCHAR:
-            mark = mark - 3
+            mark -= 3
         elif self.pre_buffer[-1] == RUNCHAR:
-            mark = mark - 2
+            mark -= 2
         elif self.pre_buffer[-2:] == RUNCHAR + '\0':
-            mark = mark - 2
-        elif self.pre_buffer[-2] == RUNCHAR:
-            pass # Decode all
-        else:
-            mark = mark - 1
+            mark -= 2
+        elif self.pre_buffer[-2] != RUNCHAR:
+            mark -= 1
 
         self.post_buffer = self.post_buffer + \
-            binascii.rledecode_hqx(self.pre_buffer[:mark])
+                binascii.rledecode_hqx(self.pre_buffer[:mark])
         self.pre_buffer = self.pre_buffer[mark:]
 
     def close(self):
@@ -443,7 +433,7 @@ class HexBin:
             n = self.dlen
         rv = ''
         while len(rv) < n:
-            rv = rv + self._read(n-len(rv))
+            rv += self._read(n-len(rv))
         self.dlen = self.dlen - n
         return rv
 
@@ -486,31 +476,31 @@ def hexbin(inp, out):
     if not out:
         out = ifp.FName
 
-    ofp = open(out, 'wb')
-    # XXXX Do translation on non-mac systems
-    while 1:
-        d = ifp.read(128000)
-        if not d: break
-        ofp.write(d)
-    ofp.close()
+    with open(out, 'wb') as ofp:
+            # XXXX Do translation on non-mac systems
+        while 1:
+            if d := ifp.read(128000):
+                ofp.write(d)
+            else:
+                break
     ifp.close_data()
 
-    d = ifp.read_rsrc(128000)
-    if d:
+    if d := ifp.read_rsrc(128000):
         ofp = openrsrc(out, 'wb')
         ofp.write(d)
         while 1:
-            d = ifp.read_rsrc(128000)
-            if not d: break
-            ofp.write(d)
+            if d := ifp.read_rsrc(128000):
+                ofp.write(d)
+            else:
+                break
         ofp.close()
 
     ifp.close()
 
 def _test():
     fname = sys.argv[1]
-    binhex(fname, fname+'.hqx')
-    hexbin(fname+'.hqx', fname+'.viahqx')
+    binhex(fname, f'{fname}.hqx')
+    hexbin(f'{fname}.hqx', f'{fname}.viahqx')
     #hexbin(fname, fname+'.unpacked')
     sys.exit(1)
 

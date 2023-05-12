@@ -52,7 +52,7 @@ class RSSHandler(handler.ContentHandler):
     # ContentHandler methods
 
     def startElement(self, name, attrs):
-        if name == "channel" or name == "image" or name == "item":
+        if name in ["channel", "image", "item"]:
             self._parent = name
 
         self._text = ""

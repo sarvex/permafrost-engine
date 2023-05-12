@@ -44,7 +44,7 @@ class WikiPage:
                 if os.path.isfile(self.mkfile(word)):
                     word = self.mklink("view", word, word)
                 else:
-                    word = self.mklink("new", word, word + "*")
+                    word = self.mklink("new", word, f"{word}*")
             else:
                 word = escape(word)
             words.append(word)
@@ -95,17 +95,16 @@ class WikiPage:
     def mkfile(self, name=None):
         if name is None:
             name = self.name
-        return os.path.join(self.homedir, name + ".txt")
+        return os.path.join(self.homedir, f"{name}.txt")
 
     def mklink(self, cmd, page, text):
-        link = self.scripturl + "?cmd=" + cmd + "&page=" + page
-        return '<a href="%s">%s</a>' % (link, text)
+        link = f"{self.scripturl}?cmd={cmd}&page={page}"
+        return f'<a href="{link}">{text}</a>'
 
     def load(self):
         try:
-            f = open(self.mkfile())
-            data = f.read().strip()
-            f.close()
+            with open(self.mkfile()) as f:
+                data = f.read().strip()
         except IOError:
             data = ""
         self.data = data

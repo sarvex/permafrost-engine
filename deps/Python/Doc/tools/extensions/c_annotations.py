@@ -53,10 +53,7 @@ class Annotations(dict):
                     entry = d[function]
                 except KeyError:
                     entry = d[function] = RCEntry(function)
-                if not refcount or refcount == "null":
-                    refcount = None
-                else:
-                    refcount = int(refcount)
+                refcount = None if not refcount or refcount == "null" else int(refcount)
                 # Update the entry with the new parameter or the result
                 # information.
                 if arg:
@@ -85,9 +82,7 @@ class Annotations(dict):
             if name.startswith("c."):
                 name = name[2:]
             entry = self.get(name)
-            if not entry:
-                continue
-            elif entry.result_type not in ("PyObject*", "PyVarObject*"):
+            if not entry or entry.result_type not in ("PyObject*", "PyVarObject*"):
                 continue
             if entry.result_refs is None:
                 rc = 'Return value: Always NULL.'

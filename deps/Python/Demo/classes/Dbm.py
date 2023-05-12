@@ -13,8 +13,9 @@ class Dbm:
     def __repr__(self):
         s = ''
         for key in self.keys():
-            t = repr(key) + ': ' + repr(self[key])
-            if s: t = ', ' + t
+            t = f'{repr(key)}: {repr(self[key])}'
+            if s:
+                t = f', {t}'
             s = s + t
         return '{' + s + '}'
 
@@ -31,10 +32,7 @@ class Dbm:
         del self.db[repr(key)]
 
     def keys(self):
-        res = []
-        for key in self.db.keys():
-            res.append(eval(key))
-        return res
+        return [eval(key) for key in self.db.keys()]
 
     def has_key(self, key):
         return self.db.has_key(repr(key))

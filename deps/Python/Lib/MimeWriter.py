@@ -106,9 +106,9 @@ class MimeWriter:
         while lines and not lines[-1]: del lines[-1]
         while lines and not lines[0]: del lines[0]
         for i in range(1, len(lines)):
-            lines[i] = "    " + lines[i].strip()
+            lines[i] = f"    {lines[i].strip()}"
         value = "\n".join(lines) + "\n"
-        line = key + ": " + value
+        line = f"{key}: {value}"
         if prefix:
             self._headers.insert(0, line)
         else:
@@ -156,9 +156,11 @@ class MimeWriter:
 
         """
         self._boundary = boundary or mimetools.choose_boundary()
-        return self.startbody("multipart/" + subtype,
-                              [("boundary", self._boundary)] + plist,
-                              prefix=prefix)
+        return self.startbody(
+            f"multipart/{subtype}",
+            [("boundary", self._boundary)] + plist,
+            prefix=prefix,
+        )
 
     def nextpart(self):
         """Returns a new instance of MimeWriter which represents an

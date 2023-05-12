@@ -20,8 +20,7 @@ class MimeViewer:
         self.button.pack({'anchor': 'w'})
         headertext = msg.getheadertext(
                 lambda x: x != 'received' and x[:5] != 'x400-')
-        height = countlines(headertext, 4)
-        if height:
+        if height := countlines(headertext, 4):
             self.htext = ScrolledText(self.frame,
                               {'height': height,
                                'width': 80,
@@ -41,8 +40,7 @@ class MimeViewer:
         body = msg.getbody()
         if type(body) == StringType:
             self.pad = None
-            height = countlines(body, 10)
-            if height:
+            if height := countlines(body, 10):
                 self.btext = ScrolledText(self.frame,
                                   {'height': height,
                                    'width': 80,
@@ -101,10 +99,10 @@ class MimeViewer:
 def countlines(str, limit):
     i = 0
     n = 0
-    while  n < limit:
+    while n < limit:
         i = string.find(str, '\n', i)
         if i < 0: break
-        n = n+1
+        n += 1
         i = i+1
     return n
 
@@ -113,8 +111,6 @@ def main():
     import getopt
     import mhlib
     opts, args = getopt.getopt(sys.argv[1:], '')
-    for o, a in opts:
-        pass
     message = None
     folder = 'inbox'
     for arg in args:

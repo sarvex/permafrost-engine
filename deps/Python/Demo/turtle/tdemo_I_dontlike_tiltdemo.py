@@ -20,19 +20,22 @@ def main():
     shape("circle")
     resizemode("user")
 
-    pu(); bk(24*18/6.283); rt(90); pd()
+    pu()
+    bk(24*18/6.283)
+    rt(90)
+    pd()
     tilt(45)
 
     pu()
 
     turtlesize(16,10,5)
     color("red", "violet")
-    for i in range(18):
+    for _ in range(18):
         fd(24)
         lt(20)
         stamp()
     color("red", "")
-    for i in range(18):
+    for _ in range(18):
         fd(24)
         lt(20)
         stamp()

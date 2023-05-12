@@ -63,9 +63,10 @@ def control(hostname):
             r = None
         if not r:
             r = newdataport(s, f)
-        cmd = getcommand()
-        if not cmd: break
-        s.send(cmd + '\r\n')
+        if cmd := getcommand():
+            s.send(cmd + '\r\n')
+        else:
+            break
 
 
 # Create a new data port and send a PORT command to the server for it.
@@ -135,8 +136,8 @@ def getdata(r):
 def getcommand():
     try:
         while 1:
-            line = raw_input('ftp.py> ')
-            if line: return line
+            if line := raw_input('ftp.py> '):
+                return line
     except EOFError:
         return ''
 

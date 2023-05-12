@@ -28,7 +28,7 @@ Cultures
 from turtle import *
 
 def replace( seq, replacementRules, n ):
-    for i in range(n):
+    for _ in range(n):
         newseq = ""
         for element in seq:
             newseq = newseq + replacementRules.get(element,element)

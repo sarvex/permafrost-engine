@@ -89,10 +89,7 @@ class NFSUnpacker(MountUnpacker):
 
     def unpack_attrstat(self):
         status = self.unpack_enum()
-        if status == NFS_OK:
-            attributes = self.unpack_fattr()
-        else:
-            attributes = None
+        attributes = self.unpack_fattr() if status == NFS_OK else None
         return status, attributes
 
     def unpack_fattr(self):

@@ -24,17 +24,17 @@ def tree(plist, l, a, f):
     a is half of the angle between 2 branches
     f is factor by which branch is shortened
     from level to level."""
-    if l > 3:
-        lst = []
-        for p in plist:
-            p.forward(l)
-            q = p.clone()
-            p.left(a)
-            q.right(a)
-            lst.append(p)
-            lst.append(q)
-        for x in tree(lst, l*f, a, f):
-            yield None
+    if l <= 3:
+        return
+    lst = []
+    for p in plist:
+        p.forward(l)
+        q = p.clone()
+        p.left(a)
+        q.right(a)
+        lst.extend((p, q))
+    for _ in tree(lst, l*f, a, f):
+        yield None
 
 def maketree():
     p = Turtle()

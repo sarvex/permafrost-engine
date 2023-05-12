@@ -4,14 +4,11 @@
 
 import sys
 
-n = 100
-if sys.argv[1:]:
-    n = int(sys.argv[1])
+n = int(sys.argv[1]) if sys.argv[1:] else 100
 
 def bottle(n):
     if n == 0: return "no more bottles of beer"
-    if n == 1: return "one bottle of beer"
-    return str(n) + " bottles of beer"
+    return "one bottle of beer" if n == 1 else f"{str(n)} bottles of beer"
 
 for i in range(n, 0, -1):
     print bottle(i), "on the wall,"

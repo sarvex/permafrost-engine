@@ -74,9 +74,7 @@ SPADES = 'Spade'
 RED = 'red'
 BLACK = 'black'
 
-COLOR = {}
-for s in (HEARTS, DIAMONDS):
-    COLOR[s] = RED
+COLOR = {s: RED for s in (HEARTS, DIAMONDS)}
 for s in (CLUBS, SPADES):
     COLOR[s] = BLACK
 
@@ -167,7 +165,7 @@ class Card:
         self.x = self.y = 0
         self.group = Group(canvas)
 
-        text = "%s  %s" % (VALNAMES[value], suit)
+        text = f"{VALNAMES[value]}  {suit}"
         self.__text = CanvasText(canvas, CARDWIDTH//2, 0,
                                anchor=N, fill=self.color, text=text)
         self.group.addtag_withtag(self.__text)
@@ -413,24 +411,21 @@ class Deck(Stack):
 
     def shuffle(self):
         n = len(self.cards)
-        newcards = []
-        for i in randperm(n):
-            newcards.append(self.cards[i])
+        newcards = [self.cards[i] for i in randperm(n)]
         self.cards = newcards
 
     def userclickhandler(self):
         opendeck = self.game.opendeck
-        card = self.deal()
-        if not card:
+        if card := self.deal():
+            self.game.opendeck.add(card)
+            card.showface()
+        else:
             while 1:
                 card = opendeck.deal()
                 if not card:
                     break
                 self.add(card)
                 card.showback()
-        else:
-            self.game.opendeck.add(card)
-            card.showface()
 
 
 def randperm(n):
@@ -515,10 +510,7 @@ class RowStack(OpenStack):
         for c in self.cards:
             if c == card:
                 break
-            if c.face_shown:
-                y = y + 2*MARGIN
-            else:
-                y = y + OFFSET
+            y = y + 2*MARGIN if c.face_shown else y + OFFSET
         card.moveto(self.x, y)
 
 
@@ -553,7 +545,7 @@ class Solitaire:
 
         x = x + XSPACING
         self.suits = []
-        for i in range(NSUITS):
+        for _ in range(NSUITS):
             x = x + XSPACING
             self.suits.append(SuitStack(x, y, self))
 
@@ -561,7 +553,7 @@ class Solitaire:
         y = y + YSPACING
 
         self.rows = []
-        for i in range(NROWS):
+        for _ in range(NROWS):
             self.rows.append(RowStack(x, y, self))
             x = x + XSPACING
 

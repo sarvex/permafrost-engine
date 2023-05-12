@@ -122,16 +122,10 @@ def resolve_dotted_attribute(obj, attr, allow_dotted_names=True):
     supported and this function operates similar to getattr(obj, attr).
     """
 
-    if allow_dotted_names:
-        attrs = attr.split('.')
-    else:
-        attrs = [attr]
-
+    attrs = attr.split('.') if allow_dotted_names else [attr]
     for i in attrs:
         if i.startswith('_'):
-            raise AttributeError(
-                'attempt to access private attribute "%s"' % i
-                )
+            raise AttributeError(f'attempt to access private attribute "{i}"')
         else:
             obj = getattr(obj,i)
     return obj
@@ -151,10 +145,7 @@ def remove_duplicates(lst):
     item must be hashable and the order of the items in the
     resulting list is not defined.
     """
-    u = {}
-    for x in lst:
-        u[x] = 1
-
+    u = {x: 1 for x in lst}
     return u.keys()
 
 class SimpleXMLRPCDispatcher:
@@ -335,13 +326,10 @@ class SimpleXMLRPCDispatcher:
                 except AttributeError:
                     pass
 
-        # Note that we aren't checking that the method actually
-        # be a callable object of some kind
         if method is None:
             return ""
-        else:
-            import pydoc
-            return pydoc.getdoc(method)
+        import pydoc
+        return pydoc.getdoc(method)
 
     def system_multicall(self, call_list):
         """system.multicall([{'methodName': 'add', 'params': [2, 2]}, ...]) => \
@@ -402,24 +390,22 @@ class SimpleXMLRPCDispatcher:
             func = self.funcs[method]
         except KeyError:
             if self.instance is not None:
-                # check for a _dispatch method
                 if hasattr(self.instance, '_dispatch'):
                     return self.instance._dispatch(method, params)
-                else:
-                    # call instance method directly
-                    try:
-                        func = resolve_dotted_attribute(
-                            self.instance,
-                            method,
-                            self.allow_dotted_names
-                            )
-                    except AttributeError:
-                        pass
+                # call instance method directly
+                try:
+                    func = resolve_dotted_attribute(
+                        self.instance,
+                        method,
+                        self.allow_dotted_names
+                        )
+                except AttributeError:
+                    pass
 
         if func is not None:
             return func(*params)
         else:
-            raise Exception('method "%s" is not supported' % method)
+            raise Exception(f'method "{method}" is not supported')
 
 class SimpleXMLRPCRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Simple XML-RPC request handler class.
@@ -450,19 +436,14 @@ class SimpleXMLRPCRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         r = {}
         ae = self.headers.get("Accept-Encoding", "")
         for e in ae.split(","):
-            match = self.aepattern.match(e)
-            if match:
+            if match := self.aepattern.match(e):
                 v = match.group(3)
                 v = float(v) if v else 1.0
                 r[match.group(1)] = v
         return r
 
     def is_rpc_path_valid(self):
-        if self.rpc_paths:
-            return self.path in self.rpc_paths
-        else:
-            # If .rpc_paths is empty, just assume all paths are legal
-            return True
+        return self.path in self.rpc_paths if self.rpc_paths else True
 
     def do_POST(self):
         """Handles the HTTP POST request.
@@ -634,8 +615,10 @@ class MultiPathXMLRPCServer(SimpleXMLRPCServer):
             # exceptions)
             exc_type, exc_value = sys.exc_info()[:2]
             response = xmlrpclib.dumps(
-                xmlrpclib.Fault(1, "%s:%s" % (exc_type, exc_value)),
-                encoding=self.encoding, allow_none=self.allow_none)
+                xmlrpclib.Fault(1, f"{exc_type}:{exc_value}"),
+                encoding=self.encoding,
+                allow_none=self.allow_none,
+            )
         return response
 
 class CGIXMLRPCRequestHandler(SimpleXMLRPCDispatcher):

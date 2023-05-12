@@ -128,17 +128,12 @@ def main():
     import sys, string
 
     # First argument is number of pegs, default 4
-    if sys.argv[1:]:
-        n = string.atoi(sys.argv[1])
-    else:
-        n = 4
-
+    n = string.atoi(sys.argv[1]) if sys.argv[1:] else 4
     # Second argument is bitmap file, default none
     if sys.argv[2:]:
         bitmap = sys.argv[2]
         # Reverse meaning of leading '@' compared to Tk
-        if bitmap[0] == '@': bitmap = bitmap[1:]
-        else: bitmap = '@' + bitmap
+        bitmap = bitmap[1:] if bitmap[0] == '@' else f'@{bitmap}'
     else:
         bitmap = None
 

@@ -81,8 +81,7 @@ def format((year, month, day)):
 def nth(n):
     if n == 1: return '1st'
     if n == 2: return '2nd'
-    if n == 3: return '3rd'
-    return '%dth' % n
+    return '3rd' if n == 3 else '%dth' % n
 
 def mkdate((year, month, day)):
     # January 1st, in 0 A.D. is arbitrarily defined to be day 1,

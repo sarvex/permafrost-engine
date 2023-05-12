@@ -16,7 +16,7 @@ class ShellWindow(ScrolledText):
                 shell = os.environ['SHELL']
             except KeyError:
                 shell = '/bin/sh'
-            shell = shell + ' -i'
+            shell += ' -i'
         args = string.split(shell)
         shell = args[0]
 
@@ -135,10 +135,7 @@ def test():
     shell = string.join(sys.argv[1:])
     root = Tk()
     root.minsize(1, 1)
-    if shell:
-        w = ShellWindow(root, shell=shell)
-    else:
-        w = ShellWindow(root)
+    w = ShellWindow(root, shell=shell) if shell else ShellWindow(root)
     w.pack(expand=1, fill=BOTH)
     w.focus_set()
     w.tk.mainloop()

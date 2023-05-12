@@ -105,17 +105,14 @@ t.bind('<Delete>', backspace)
 def invoke():
     cmd = t.get('promptEnd + 1 char', AtInsert())
     if t.getboolean(tk.call('info', 'complete', cmd)): # XXX
-        if app == root.winfo_name():
-            msg = tk.call('eval', cmd) # XXX
-        else:
-            msg = t.send(app, cmd)
+        msg = tk.call('eval', cmd) if app == root.winfo_name() else t.send(app, cmd)
         if msg:
             t.insert(AtInsert(), msg + '\n')
         prompt()
     t.yview_pickplace(AtInsert())
 
 def prompt():
-    t.insert(AtInsert(), app + ': ')
+    t.insert(AtInsert(), f'{app}: ')
     t.mark_set('promptEnd', 'insert - 1 char')
     t.tag_add('bold', 'insert linestart', 'promptEnd')
 
@@ -127,15 +124,14 @@ def newApp(appName):
     global app
     app = appName
     t.delete('promptEnd linestart', 'promptEnd')
-    t.insert('promptEnd', appName + ':')
+    t.insert('promptEnd', f'{appName}:')
     t.tag_add('bold', 'promptEnd linestart', 'promptEnd')
 
 def fillAppsMenu():
     file_m_apps.add('command')
     file_m_apps.delete(0, 'last')
     names = root.winfo_interps()
-    names = list(names)
-    names.sort()
+    names = sorted(names)
     for name in names:
         try:
             root.send(name, 'winfo name .')

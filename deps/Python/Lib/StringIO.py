@@ -73,10 +73,10 @@ class StringIO:
         or raises StopIteration when EOF is hit.
         """
         _complain_ifclosed(self.closed)
-        r = self.readline()
-        if not r:
+        if r := self.readline():
+            return r
+        else:
             raise StopIteration
-        return r
 
     def close(self):
         """Free the memory buffer.
@@ -128,10 +128,7 @@ class StringIO:
         if self.buflist:
             self.buf += ''.join(self.buflist)
             self.buflist = []
-        if n is None or n < 0:
-            newpos = self.len
-        else:
-            newpos = min(self.pos+n, self.len)
+        newpos = self.len if n is None or n < 0 else min(self.pos+n, self.len)
         r = self.buf[self.pos:newpos]
         self.pos = newpos
         return r
@@ -154,13 +151,9 @@ class StringIO:
             self.buf += ''.join(self.buflist)
             self.buflist = []
         i = self.buf.find('\n', self.pos)
-        if i < 0:
-            newpos = self.len
-        else:
-            newpos = i+1
-        if length is not None and length >= 0:
-            if self.pos + length < newpos:
-                newpos = self.pos + length
+        newpos = self.len if i < 0 else i+1
+        if length is not None and length >= 0 and self.pos + length < newpos:
+            newpos = self.pos + length
         r = self.buf[self.pos:newpos]
         self.pos = newpos
         return r
@@ -175,13 +168,11 @@ class StringIO:
         """
         total = 0
         lines = []
-        line = self.readline()
-        while line:
+        while line := self.readline():
             lines.append(line)
             total += len(line)
             if 0 < sizehint <= total:
                 break
-            line = self.readline()
         return lines
 
     def truncate(self, size=None):

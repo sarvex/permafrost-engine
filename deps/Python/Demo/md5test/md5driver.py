@@ -81,11 +81,11 @@ def MDFilter():
     mdContext = md5.new()
 
     while 1:
-        data = sys.stdin.read(16)
-        if not data:
-            break
-        mdContext.update(data)
+        if data := sys.stdin.read(16):
+            mdContext.update(data)
 
+        else:
+            break
     MDPrint(mdContext.digest())
     print
 

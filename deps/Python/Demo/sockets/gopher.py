@@ -120,10 +120,10 @@ def get_binary(selector, host, port):
 def get_alt_binary(selector, host, port, func, blocksize):
     f = send_request(selector, host, port)
     while 1:
-        data = f.read(blocksize)
-        if not data:
+        if data := f.read(blocksize):
+            func(data)
+        else:
             break
-        func(data)
 
 # A *very* simple interactive browser
 

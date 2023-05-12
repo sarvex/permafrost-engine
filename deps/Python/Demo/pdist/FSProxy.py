@@ -61,7 +61,7 @@ class FSProxyLocal:
         return name[0] == '.'
 
     def _hide(self, name):
-        return '.%s' % name
+        return f'.{name}'
 
     def visible(self, name):
         if len(name) > maxnamelen: return 0
@@ -72,18 +72,16 @@ class FSProxyLocal:
         if head or not tail: return 0
         if os.path.islink(name): return 0
         if '\0' in open(name, 'rb').read(512): return 0
-        for ign in self._ignore:
-            if fnmatch.fnmatch(name, ign): return 0
-        return 1
+        return next((0 for ign in self._ignore if fnmatch.fnmatch(name, ign)), 1)
 
     def check(self, name):
         if not self.visible(name):
-            raise os.error, "protected name %s" % repr(name)
+            raise (os.error, f"protected name {repr(name)}")
 
     def checkfile(self, name):
         self.check(name)
         if not os.path.isfile(name):
-            raise os.error, "not a plain file %s" % repr(name)
+            raise (os.error, f"not a plain file {repr(name)}")
 
     def pwd(self):
         return os.getcwd()
@@ -144,10 +142,10 @@ class FSProxyLocal:
         f = open(name)
         sum = md5.new()
         while 1:
-            buffer = f.read(BUFFERSIZE)
-            if not buffer:
+            if buffer := f.read(BUFFERSIZE):
+                sum.update(buffer)
+            else:
                 break
-            sum.update(buffer)
         return sum.digest()
 
     def size(self, name):
@@ -224,22 +222,21 @@ class FSProxyLocal:
 
     def read(self, name, offset = 0, length = -1):
         self.checkfile(name)
-        f = open(name)
-        f.seek(offset)
-        if length == 0:
-            data = ''
-        elif length < 0:
-            data = f.read()
-        else:
-            data = f.read(length)
-        f.close()
+        with open(name) as f:
+            f.seek(offset)
+            if length == 0:
+                data = ''
+            elif length < 0:
+                data = f.read()
+            else:
+                data = f.read(length)
         return data
 
     def create(self, name):
         self.check(name)
         if os.path.exists(name):
             self.checkfile(name)
-            bname = name + '~'
+            bname = f'{name}~'
             try:
                 os.unlink(bname)
             except os.error:
@@ -250,10 +247,9 @@ class FSProxyLocal:
 
     def write(self, name, data, offset = 0):
         self.checkfile(name)
-        f = open(name, 'r+')
-        f.seek(offset)
-        f.write(data)
-        f.close()
+        with open(name, 'r+') as f:
+            f.seek(offset)
+            f.write(data)
 
     def mkdir(self, name):
         self.check(name)
@@ -289,10 +285,7 @@ class FSProxyClient(client.Client):
 def test():
     import string
     import sys
-    if sys.argv[1:]:
-        port = string.atoi(sys.argv[1])
-    else:
-        port = 4127
+    port = string.atoi(sys.argv[1]) if sys.argv[1:] else 4127
     proxy = FSProxyServer(('', port))
     proxy._serverloop()
 

@@ -51,10 +51,9 @@ class RCS:
         Optional OTHERFLAGS are passed to rlog.
 
         """
-        f = self._open(name_rev, 'rlog ' + otherflags)
+        f = self._open(name_rev, f'rlog {otherflags}')
         data = f.read()
-        status = self._closepipe(f)
-        if status:
+        if status := self._closepipe(f):
             data = data + "%s: %s" % status
         elif data[-1] == '\n':
             data = data[:-1]
@@ -88,8 +87,7 @@ class RCS:
             if i > 0:
                 key, value = line[:i], string.strip(line[i+1:])
                 dict[key] = value
-        status = self._closepipe(f)
-        if status:
+        if status := self._closepipe(f):
             raise IOError, status
         return dict
 
@@ -98,13 +96,13 @@ class RCS:
     def lock(self, name_rev):
         """Set an rcs lock on NAME_REV."""
         name, rev = self.checkfile(name_rev)
-        cmd = "rcs -l%s %s" % (rev, name)
+        cmd = f"rcs -l{rev} {name}"
         return self._system(cmd)
 
     def unlock(self, name_rev):
         """Clear an rcs lock on NAME_REV."""
         name, rev = self.checkfile(name_rev)
-        cmd = "rcs -u%s %s" % (rev, name)
+        cmd = f"rcs -u{rev} {name}"
         return self._system(cmd)
 
     def checkout(self, name_rev, withlock=0, otherflags=""):
@@ -119,9 +117,8 @@ class RCS:
 
         """
         name, rev = self.checkfile(name_rev)
-        if withlock: lockflag = "-l"
-        else: lockflag = "-u"
-        cmd = 'co %s%s %s %s' % (lockflag, rev, otherflags, name)
+        lockflag = "-l" if withlock else "-u"
+        cmd = f'co {lockflag}{rev} {otherflags} {name}'
         return self._system(cmd)
 
     def checkin(self, name_rev, message=None, otherflags=""):
@@ -147,12 +144,10 @@ class RCS:
             f = tempfile.NamedTemporaryFile()
             f.write(message)
             f.flush()
-            cmd = 'ci %s%s -t%s %s %s' % \
-                  (lockflag, rev, f.name, otherflags, name)
+            cmd = f'ci {lockflag}{rev} -t{f.name} {otherflags} {name}'
         else:
             message = re.sub(r'([\"$`])', r'\\\1', message)
-            cmd = 'ci %s%s -m"%s" %s %s' % \
-                  (lockflag, rev, message, otherflags, name)
+            cmd = f'ci {lockflag}{rev} -m"{message}" {otherflags} {name}'
         return self._system(cmd)
 
     # --- Exported support methods ---
@@ -182,15 +177,11 @@ class RCS:
         file that would be created by "ci" is returned.
 
         """
-        if self._isrcs(name): namev = name
-        else: namev = name + ',v'
+        namev = name if self._isrcs(name) else f'{name},v'
         if os.path.isfile(namev): return namev
         namev = os.path.join('RCS', os.path.basename(namev))
         if os.path.isfile(namev): return namev
-        if os.path.isdir('RCS'):
-            return os.path.join('RCS', namev)
-        else:
-            return namev
+        return os.path.join('RCS', namev) if os.path.isdir('RCS') else namev
 
     def realname(self, namev):
         """Return the pathname of the work file for NAME.
@@ -200,8 +191,7 @@ class RCS:
         that would be created by "co" is returned.
 
         """
-        if self._isrcs(namev): name = namev[:-2]
-        else: name = namev
+        name = namev[:-2] if self._isrcs(namev) else namev
         if os.path.isfile(name): return name
         name = os.path.basename(name)
         return name
@@ -216,8 +206,7 @@ class RCS:
         """
         f = self._open(name_rev, 'rlog -L -R')
         line = f.readline()
-        status = self._closepipe(f)
-        if status:
+        if status := self._closepipe(f):
             raise IOError, status
         if not line: return None
         if line[-1] == '\n':
@@ -251,7 +240,7 @@ class RCS:
         name, rev = self.checkfile(name_rev)
         namev = self.rcsname(name)
         if rev:
-            cmd = cmd + ' ' + rflag + rev
+            cmd = f'{cmd} {rflag}{rev}'
         return os.popen("%s %r" % (cmd, namev))
 
     def _unmangle(self, name_rev):
@@ -285,7 +274,7 @@ class RCS:
         else:
             code = 'killed'
         if reason&0x80:
-            code = code + '(coredump)'
+            code += '(coredump)'
         return code, signal
 
     def _system(self, cmd):
@@ -302,9 +291,9 @@ class RCS:
         capture stdout/stderr of the command and return it.
 
         """
-        cmd = cmd + " </dev/null"
-        sts = os.system(cmd)
-        if sts: raise IOError, "command exit status %d" % sts
+        cmd = f"{cmd} </dev/null"
+        if sts := os.system(cmd):
+            raise IOError, "command exit status %d" % sts
 
     def _filter(self, files, pat = None):
         """INTERNAL: Return a sorted copy of the given list of FILES.

@@ -78,23 +78,23 @@ class DemoSHList:
             count = count+1
 
 
-        for person,boss,name in employees :
+        for person,boss,name in employees:
             # '.' is the separator character we chose above
             #
-            key= boss    + '.'     + person
+            key = f'{boss}.{person}'
             #    ^^^^                ^^^^^^
             #    parent entryPath /  child's name
 
             hlist.add( key, text=name )
 
-            # [Hint] Make sure the keys (e.g. 'boss.person') you choose
-            #    are unique names. If you cannot be sure of this (because of
-            #    the structure of your database, e.g.) you can use the
-            #    "add_child" command instead:
-            #
-            #  hlist.addchild( boss,  text=name)
-            #                  ^^^^
-            #                  parent entryPath
+                # [Hint] Make sure the keys (e.g. 'boss.person') you choose
+                #    are unique names. If you cannot be sure of this (because of
+                #    the structure of your database, e.g.) you can use the
+                #    "add_child" command instead:
+                #
+                #  hlist.addchild( boss,  text=name)
+                #                  ^^^^
+                #                  parent entryPath
 
 
         # Use a ButtonBox to hold the buttons.

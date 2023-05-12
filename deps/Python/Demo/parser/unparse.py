@@ -6,7 +6,7 @@ import os
 
 # Large float and imaginary literals get turned into infinities in the AST.
 # We unparse those infinities to INFSTR.
-INFSTR = "1e" + repr(sys.float_info.max_10_exp + 1)
+INFSTR = f"1e{repr(sys.float_info.max_10_exp + 1)}"
 
 def interleave(inter, f, seq):
     """Call f on each item in seq, calling inter() in between.
@@ -59,7 +59,7 @@ class Unparser:
             for t in tree:
                 self.dispatch(t)
             return
-        meth = getattr(self, "_"+tree.__class__.__name__)
+        meth = getattr(self, f"_{tree.__class__.__name__}")
         meth(tree)
 
 
@@ -105,7 +105,7 @@ class Unparser:
     def _AugAssign(self, t):
         self.fill()
         self.dispatch(t.target)
-        self.write(" "+self.binop[t.op.__class__.__name__]+"= ")
+        self.write(f" {self.binop[t.op.__class__.__name__]}= ")
         self.dispatch(t.value)
 
     def _Return(self, t):
@@ -227,7 +227,7 @@ class Unparser:
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill("class "+t.name)
+        self.fill(f"class {t.name}")
         if t.bases:
             self.write("(")
             for a in t.bases:
@@ -243,7 +243,7 @@ class Unparser:
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill("def "+t.name + "(")
+        self.fill(f"def {t.name}(")
         self.dispatch(t.args)
         self.write(")")
         self.enter()
@@ -316,7 +316,7 @@ class Unparser:
         if "unicode_literals" not in self.future_imports:
             self.write(repr(tree.s))
         elif isinstance(tree.s, str):
-            self.write("b" + repr(tree.s))
+            self.write(f"b{repr(tree.s)}")
         elif isinstance(tree.s, unicode):
             self.write(repr(tree.s).lstrip("u"))
         else:
@@ -443,7 +443,7 @@ class Unparser:
     def _BinOp(self, t):
         self.write("(")
         self.dispatch(t.left)
-        self.write(" " + self.binop[t.op.__class__.__name__] + " ")
+        self.write(f" {self.binop[t.op.__class__.__name__]} ")
         self.dispatch(t.right)
         self.write(")")
 
@@ -453,14 +453,14 @@ class Unparser:
         self.write("(")
         self.dispatch(t.left)
         for o, e in zip(t.ops, t.comparators):
-            self.write(" " + self.cmpops[o.__class__.__name__] + " ")
+            self.write(f" {self.cmpops[o.__class__.__name__]} ")
             self.dispatch(e)
         self.write(")")
 
     boolops = {ast.And: 'and', ast.Or: 'or'}
     def _BoolOp(self, t):
         self.write("(")
-        s = " %s " % self.boolops[t.op.__class__]
+        s = f" {self.boolops[t.op.__class__]} "
         interleave(lambda: self.write(s), self.dispatch, t.values)
         self.write(")")
 
@@ -548,7 +548,7 @@ class Unparser:
         if t.kwarg:
             if first:first = False
             else: self.write(", ")
-            self.write("**"+t.kwarg)
+            self.write(f"**{t.kwarg}")
 
     def _keyword(self, t):
         self.write(t.arg)
@@ -566,7 +566,7 @@ class Unparser:
     def _alias(self, t):
         self.write(t.name)
         if t.asname:
-            self.write(" as "+t.asname)
+            self.write(f" as {t.asname}")
 
 def roundtrip(filename, output=sys.stdout):
     with open(filename, "r") as pyfile:

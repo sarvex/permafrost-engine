@@ -58,8 +58,7 @@ class Array:
         self.maxvalue = max(data)
         self.canvas.config(width=(self.size+1)*XGRID,
                            height=(self.maxvalue+1)*YGRID)
-        for i in range(self.size):
-            self.items.append(ArrayItem(self, i, data[i]))
+        self.items.extend(ArrayItem(self, i, data[i]) for i in range(self.size))
         self.reset("Sort demo, size %d" % self.size)
 
     speed = "normal"
@@ -228,8 +227,7 @@ class ArrayItem:
         i = self.nearestindex(event.x)
         if i >= self.array.getsize():
             i = self.array.getsize() - 1
-        if i < 0:
-            i = 0
+        i = max(i, 0)
         other = self.array.items[i]
         here = self.index
         self.array.items[here], self.array.items[i] = other, self
@@ -403,7 +401,7 @@ def selectionsort(array):
 def bubblesort(array):
     size = array.getsize()
     array.reset("Bubble sort")
-    for i in range(size):
+    for _ in range(size):
         for j in range(1, size):
             if array.compare(j-1, j) > 0:
                 array.swap(j-1, j)

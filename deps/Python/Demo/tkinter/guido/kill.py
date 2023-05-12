@@ -27,11 +27,11 @@ class Kill(Frame):
     def kill(self, selected):
         c = self.format_list[self.format.get()][2]
         pid = split(selected)[c]
-        os.system('kill -9 ' + pid)
+        os.system(f'kill -9 {pid}')
         self.do_update()
     def do_update(self):
         name, option, column = self.format_list[self.format.get()]
-        s = commands.getoutput('ps -w ' + option)
+        s = commands.getoutput(f'ps -w {option}')
         list = splitfields(s, '\n')
         self.header.set(list[0])
         del list[0]

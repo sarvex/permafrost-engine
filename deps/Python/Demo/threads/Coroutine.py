@@ -78,13 +78,13 @@ class _CoEvent:
         if self.f is None:
             return 'main coroutine'
         else:
-            return 'coroutine for func ' + self.f.func_name
+            return f'coroutine for func {self.f.func_name}'
 
     def __hash__(self):
         return id(self)
 
-    def __cmp__(x,y):
-        return cmp(id(x), id(y))
+    def __cmp__(self, y):
+        return cmp(id(self), id(y))
 
     def resume(self):
         self.e.post()
@@ -114,10 +114,9 @@ class Coroutine:
         me.wait()
         if not self.killed:
             try:
-                try:
-                    apply(me.f, args)
-                except Killed:
-                    pass
+                apply(me.f, args)
+            except Killed:
+                pass
             finally:
                 if not self.killed:
                     self.terminated_by = me

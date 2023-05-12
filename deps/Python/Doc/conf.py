@@ -18,7 +18,7 @@ extensions = ['sphinx.ext.coverage', 'sphinx.ext.doctest',
 
 # General substitutions.
 project = 'Python'
-copyright = '1990-%s, Python Software Foundation' % time.strftime('%Y')
+copyright = f"1990-{time.strftime('%Y')}, Python Software Foundation"
 
 # We look for the Include/patchlevel.h file in the current Python source tree
 # and replace the values accordingly.
@@ -88,54 +88,93 @@ latex_engine = 'xelatex'
 
 # Get LaTeX to handle Unicode correctly
 latex_elements = {
-}
-
-# Additional stuff for the LaTeX preamble.
-latex_elements['preamble'] = r'''
+    'preamble': '''
 \authoraddress{
-  \sphinxstrong{Python Software Foundation}\\
+  \sphinxstrong{Python Software Foundation}\
   Email: \sphinxemail{docs@python.org}
 }
 \let\Verbatim=\OriginalVerbatim
 \let\endVerbatim=\endOriginalVerbatim
-'''
-
-# The paper size ('letter' or 'a4').
-latex_elements['papersize'] = 'a4'
-
-# The font size ('10pt', '11pt' or '12pt').
-latex_elements['pointsize'] = '10pt'
+''',
+    'papersize': 'a4',
+    'pointsize': '10pt',
+}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 _stdauthor = r'Guido van Rossum\\and the Python development team'
 latex_documents = [
-    ('c-api/index', 'c-api.tex',
-     'The Python/C API', _stdauthor, 'manual'),
-    ('distributing/index', 'distributing.tex',
-     'Distributing Python Modules', _stdauthor, 'manual'),
-    ('extending/index', 'extending.tex',
-     'Extending and Embedding Python', _stdauthor, 'manual'),
-    ('installing/index', 'installing.tex',
-     'Installing Python Modules', _stdauthor, 'manual'),
-    ('library/index', 'library.tex',
-     'The Python Library Reference', _stdauthor, 'manual'),
-    ('reference/index', 'reference.tex',
-     'The Python Language Reference', _stdauthor, 'manual'),
-    ('tutorial/index', 'tutorial.tex',
-     'Python Tutorial', _stdauthor, 'manual'),
-    ('using/index', 'using.tex',
-     'Python Setup and Usage', _stdauthor, 'manual'),
-    ('faq/index', 'faq.tex',
-     'Python Frequently Asked Questions', _stdauthor, 'manual'),
-    ('whatsnew/' + version, 'whatsnew.tex',
-     'What\'s New in Python', 'A. M. Kuchling', 'howto'),
+    ('c-api/index', 'c-api.tex', 'The Python/C API', _stdauthor, 'manual'),
+    (
+        'distributing/index',
+        'distributing.tex',
+        'Distributing Python Modules',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        'extending/index',
+        'extending.tex',
+        'Extending and Embedding Python',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        'installing/index',
+        'installing.tex',
+        'Installing Python Modules',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        'library/index',
+        'library.tex',
+        'The Python Library Reference',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        'reference/index',
+        'reference.tex',
+        'The Python Language Reference',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        'tutorial/index',
+        'tutorial.tex',
+        'Python Tutorial',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        'using/index',
+        'using.tex',
+        'Python Setup and Usage',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        'faq/index',
+        'faq.tex',
+        'Python Frequently Asked Questions',
+        _stdauthor,
+        'manual',
+    ),
+    (
+        f'whatsnew/{version}',
+        'whatsnew.tex',
+        'What\'s New in Python',
+        'A. M. Kuchling',
+        'howto',
+    ),
 ]
 # Collect all HOWTOs individually
-latex_documents.extend(('howto/' + fn[:-4], 'howto-' + fn[:-4] + '.tex',
-                        '', _stdauthor, 'howto')
-                       for fn in os.listdir('howto')
-                       if fn.endswith('.rst') and fn != 'index.rst')
+latex_documents.extend(
+    (f'howto/{fn[:-4]}', f'howto-{fn[:-4]}.tex', '', _stdauthor, 'howto')
+    for fn in os.listdir('howto')
+    if fn.endswith('.rst') and fn != 'index.rst'
+)
 
 # Documents to append as an appendix to all manuals.
 latex_appendices = ['glossary', 'about', 'license', 'copyright']

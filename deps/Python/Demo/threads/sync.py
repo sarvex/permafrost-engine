@@ -275,12 +275,11 @@ class condition:
         # the lock actually used by .acquire() and .release()
         if lock is None:
             self.mutex = thread.allocate_lock()
+        elif hasattr(lock, 'acquire') and \
+                   hasattr(lock, 'release'):
+            self.mutex = lock
         else:
-            if hasattr(lock, 'acquire') and \
-               hasattr(lock, 'release'):
-                self.mutex = lock
-            else:
-                raise TypeError, 'condition constructor requires ' \
+            raise TypeError, 'condition constructor requires ' \
                                  'a lock argument'
 
         # lock used to block threads until a signal

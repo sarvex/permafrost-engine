@@ -33,10 +33,7 @@ def mkpanel(color, rows, cols, tly, tlx):
     win = curses.newwin(rows, cols, tly, tlx)
     pan = panel.new_panel(win)
     if curses.has_colors():
-        if color == curses.COLOR_BLUE:
-            fg = curses.COLOR_WHITE
-        else:
-            fg = curses.COLOR_BLACK
+        fg = curses.COLOR_WHITE if color == curses.COLOR_BLUE else curses.COLOR_BLACK
         bg = color
         curses.init_pair(color, fg, bg)
         win.bkgdset(ord(' '), curses.color_pair(color))
@@ -75,7 +72,7 @@ def demo_panels(win):
     for y in range(0, curses.LINES - 1):
         for x in range(0, curses.COLS):
             stdscr.addstr("%d" % ((y + x) % 10))
-    for y in range(0, 1):
+    for _ in range(0, 1):
         p1 = mkpanel(curses.COLOR_RED,
                      curses.LINES // 2 - 2,
                      curses.COLS // 8 + 1,

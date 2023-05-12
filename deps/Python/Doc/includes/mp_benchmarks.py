@@ -7,11 +7,7 @@
 
 import time, sys, multiprocessing, threading, Queue, gc
 
-if sys.platform == 'win32':
-    _timer = time.clock
-else:
-    _timer = time.time
-
+_timer = time.clock if sys.platform == 'win32' else time.time
 delta = 1
 
 
@@ -23,7 +19,7 @@ def queuespeed_func(q, c, iterations):
     c.notify()
     c.release()
 
-    for i in xrange(iterations):
+    for _ in xrange(iterations):
         q.put(a)
 
     q.put('STOP')
@@ -63,7 +59,7 @@ def pipe_func(c, cond, iterations):
     cond.notify()
     cond.release()
 
-    for i in xrange(iterations):
+    for _ in xrange(iterations):
         c.send(a)
 
     c.send('STOP')
@@ -144,7 +140,7 @@ def conditionspeed_func(c, N):
     c.acquire()
     c.notify()
 
-    for i in xrange(N):
+    for _ in xrange(N):
         c.wait()
         c.notify()
 

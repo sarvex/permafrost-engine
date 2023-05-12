@@ -205,7 +205,7 @@ class ParsingError(Error):
     """Raised when a configuration file does not follow legal syntax."""
 
     def __init__(self, filename):
-        Error.__init__(self, 'File contains parsing errors: %s' % filename)
+        Error.__init__(self, f'File contains parsing errors: {filename}')
         self.filename = filename
         self.errors = []
         self.args = (filename, )
@@ -234,10 +234,7 @@ class RawConfigParser:
         self._dict = dict_type
         self._sections = self._dict()
         self._defaults = self._dict()
-        if allow_no_value:
-            self._optcre = self.OPTCRE_NV
-        else:
-            self._optcre = self.OPTCRE
+        self._optcre = self.OPTCRE_NV if allow_no_value else self.OPTCRE
         if defaults:
             for key, value in defaults.items():
                 self._defaults[self.optionxform(key)] = value
@@ -258,7 +255,7 @@ class RawConfigParser:
         case-insensitive variants.
         """
         if section.lower() == "default":
-            raise ValueError, 'Invalid section name: %s' % section
+            raise (ValueError, f'Invalid section name: {section}')
 
         if section in self._sections:
             raise DuplicateSectionError(section)
@@ -367,7 +364,7 @@ class RawConfigParser:
     def getboolean(self, section, option):
         v = self.get(section, option)
         if v.lower() not in self._boolean_states:
-            raise ValueError, 'Not a boolean: %s' % v
+            raise (ValueError, f'Not a boolean: {v}')
         return self._boolean_states[v.lower()]
 
     def optionxform(self, optionstr):
@@ -488,59 +485,51 @@ class RawConfigParser:
                 continue
             # continuation line?
             if line[0].isspace() and cursect is not None and optname:
-                value = line.strip()
-                if value:
+                if value := line.strip():
                     cursect[optname].append(value)
-            # a section header or option header?
-            else:
-                # is it a section header?
-                mo = self.SECTCRE.match(line)
-                if mo:
-                    sectname = mo.group('header')
-                    if sectname in self._sections:
-                        cursect = self._sections[sectname]
-                    elif sectname == DEFAULTSECT:
-                        cursect = self._defaults
-                    else:
-                        cursect = self._dict()
-                        cursect['__name__'] = sectname
-                        self._sections[sectname] = cursect
-                    # So sections can't start with a continuation line
-                    optname = None
-                # no section header in the file?
-                elif cursect is None:
-                    raise MissingSectionHeaderError(fpname, lineno, line)
-                # an option line?
+            elif mo := self.SECTCRE.match(line):
+                sectname = mo.group('header')
+                if sectname in self._sections:
+                    cursect = self._sections[sectname]
+                elif sectname == DEFAULTSECT:
+                    cursect = self._defaults
                 else:
-                    mo = self._optcre.match(line)
-                    if mo:
-                        optname, vi, optval = mo.group('option', 'vi', 'value')
-                        optname = self.optionxform(optname.rstrip())
+                    cursect = self._dict()
+                    cursect['__name__'] = sectname
+                    self._sections[sectname] = cursect
+                # So sections can't start with a continuation line
+                optname = None
+            elif cursect is None:
+                raise MissingSectionHeaderError(fpname, lineno, line)
+            else:
+                if mo := self._optcre.match(line):
+                    optname, vi, optval = mo.group('option', 'vi', 'value')
+                    optname = self.optionxform(optname.rstrip())
                         # This check is fine because the OPTCRE cannot
                         # match if it would set optval to None
-                        if optval is not None:
-                            if vi in ('=', ':') and ';' in optval:
-                                # ';' is a comment delimiter only if it follows
-                                # a spacing character
-                                pos = optval.find(';')
-                                if pos != -1 and optval[pos-1].isspace():
-                                    optval = optval[:pos]
-                            optval = optval.strip()
-                            # allow empty values
-                            if optval == '""':
-                                optval = ''
-                            cursect[optname] = [optval]
-                        else:
-                            # valueless option handling
-                            cursect[optname] = optval
+                    if optval is None:
+                        # valueless option handling
+                        cursect[optname] = optval
                     else:
-                        # a non-fatal parsing error occurred.  set up the
-                        # exception but keep going. the exception will be
-                        # raised at the end of the file and will contain a
-                        # list of all bogus lines
-                        if not e:
-                            e = ParsingError(fpname)
-                        e.append(lineno, repr(line))
+                        if vi in ('=', ':') and ';' in optval:
+                            # ';' is a comment delimiter only if it follows
+                            # a spacing character
+                            pos = optval.find(';')
+                            if pos != -1 and optval[pos-1].isspace():
+                                optval = optval[:pos]
+                        optval = optval.strip()
+                        # allow empty values
+                        if optval == '""':
+                            optval = ''
+                        cursect[optname] = [optval]
+                else:
+                    # a non-fatal parsing error occurred.  set up the
+                    # exception but keep going. the exception will be
+                    # raised at the end of the file and will contain a
+                    # list of all bogus lines
+                    if not e:
+                        e = ParsingError(fpname)
+                    e.append(lineno, repr(line))
         # if any parsing errors occurred, raise an exception
         if e:
             raise e
@@ -677,10 +666,7 @@ class ConfigParser(RawConfigParser):
 
     def _interpolation_replace(self, match):
         s = match.group(1)
-        if s is None:
-            return match.group()
-        else:
-            return "%%(%s)s" % self.optionxform(s)
+        return match.group() if s is None else "%%(%s)s" % self.optionxform(s)
 
 
 class SafeConfigParser(ConfigParser):
@@ -738,9 +724,10 @@ class SafeConfigParser(ConfigParser):
         # string if:
         # - we do not allow valueless options, or
         # - we allow valueless options but the value is not None
-        if self._optcre is self.OPTCRE or value:
-            if not isinstance(value, basestring):
-                raise TypeError("option values must be strings")
+        if (self._optcre is self.OPTCRE or value) and not isinstance(
+            value, basestring
+        ):
+            raise TypeError("option values must be strings")
         if value is not None:
             # check for bad percent signs:
             # first, replace all "good" interpolations

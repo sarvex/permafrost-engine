@@ -60,9 +60,8 @@ def checkin(x, copts, fn):
 
 def checkout(x, copts, fn):
     data = x.get(fn)
-    f = open(fn, 'w')
-    f.write(data)
-    f.close()
+    with open(fn, 'w') as f:
+        f.write(data)
 
 def lock(x, copts, fn):
     x.lock(fn)
@@ -112,9 +111,8 @@ def diff(x, copts, fn):
 
 def same(x, copts, fn, data = None):
     if data is None:
-        f = open(fn)
-        data = f.read()
-        f.close()
+        with open(fn) as f:
+            data = f.read()
     lsum = md5.new(data).digest()
     rsum = x.sum(fn)
     return lsum == rsum

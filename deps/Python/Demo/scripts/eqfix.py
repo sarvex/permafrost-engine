@@ -41,7 +41,7 @@ rep = sys.stdout.write
 def main():
     bad = 0
     if not sys.argv[1:]: # No arguments
-        err('usage: ' + sys.argv[0] + ' file-or-directory ...\n')
+        err(f'usage: {sys.argv[0]}' + ' file-or-directory ...\n')
         sys.exit(2)
     for arg in sys.argv[1:]:
         if os.path.isdir(arg):
@@ -49,8 +49,7 @@ def main():
         elif os.path.islink(arg):
             err(arg + ': will not process symbolic links\n')
             bad = 1
-        else:
-            if fix(arg): bad = 1
+        elif fix(arg): bad = 1
     sys.exit(bad)
 
 ispythonprog = re.compile('^[a-zA-Z0-9_]+\.py$')

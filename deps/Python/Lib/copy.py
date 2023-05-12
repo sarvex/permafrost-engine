@@ -71,27 +71,20 @@ def copy(x):
 
     cls = type(x)
 
-    copier = _copy_dispatch.get(cls)
-    if copier:
+    if copier := _copy_dispatch.get(cls):
         return copier(x)
 
-    copier = getattr(cls, "__copy__", None)
-    if copier:
+    if copier := getattr(cls, "__copy__", None):
         return copier(x)
 
-    reductor = dispatch_table.get(cls)
-    if reductor:
+    if reductor := dispatch_table.get(cls):
         rv = reductor(x)
+    elif reductor := getattr(x, "__reduce_ex__", None):
+        rv = reductor(2)
+    elif reductor := getattr(x, "__reduce__", None):
+        rv = reductor()
     else:
-        reductor = getattr(x, "__reduce_ex__", None)
-        if reductor:
-            rv = reductor(2)
-        else:
-            reductor = getattr(x, "__reduce__", None)
-            if reductor:
-                rv = reductor()
-            else:
-                raise Error("un(shallow)copyable object of type %s" % cls)
+        raise Error(f"un(shallow)copyable object of type {cls}")
 
     return _reconstruct(x, rv, 0)
 
@@ -129,10 +122,7 @@ def _copy_inst(x):
     else:
         y = _EmptyClass()
         y.__class__ = x.__class__
-    if hasattr(x, '__getstate__'):
-        state = x.__getstate__()
-    else:
-        state = x.__dict__
+    state = x.__getstate__() if hasattr(x, '__getstate__') else x.__dict__
     if hasattr(y, '__setstate__'):
         y.__setstate__(state)
     else:
@@ -158,8 +148,7 @@ def deepcopy(x, memo=None, _nil=[]):
 
     cls = type(x)
 
-    copier = _deepcopy_dispatch.get(cls)
-    if copier:
+    if copier := _deepcopy_dispatch.get(cls):
         y = copier(x, memo)
     else:
         try:
@@ -168,26 +157,18 @@ def deepcopy(x, memo=None, _nil=[]):
             issc = 0
         if issc:
             y = _deepcopy_atomic(x, memo)
+        elif copier := getattr(x, "__deepcopy__", None):
+            y = copier(memo)
         else:
-            copier = getattr(x, "__deepcopy__", None)
-            if copier:
-                y = copier(memo)
+            if reductor := dispatch_table.get(cls):
+                rv = reductor(x)
+            elif reductor := getattr(x, "__reduce_ex__", None):
+                rv = reductor(2)
+            elif reductor := getattr(x, "__reduce__", None):
+                rv = reductor()
             else:
-                reductor = dispatch_table.get(cls)
-                if reductor:
-                    rv = reductor(x)
-                else:
-                    reductor = getattr(x, "__reduce_ex__", None)
-                    if reductor:
-                        rv = reductor(2)
-                    else:
-                        reductor = getattr(x, "__reduce__", None)
-                        if reductor:
-                            rv = reductor()
-                        else:
-                            raise Error(
-                                "un(deep)copyable object of type %s" % cls)
-                y = _reconstruct(x, rv, 1, memo)
+                raise Error(f"un(deep)copyable object of type {cls}")
+            y = _reconstruct(x, rv, 1, memo)
 
     memo[d] = y
     _keep_alive(x, memo) # Make sure x lives at least as long as d
@@ -226,26 +207,18 @@ d[weakref.ref] = _deepcopy_atomic
 def _deepcopy_list(x, memo):
     y = []
     memo[id(x)] = y
-    for a in x:
-        y.append(deepcopy(a, memo))
+    y.extend(deepcopy(a, memo) for a in x)
     return y
 d[list] = _deepcopy_list
 
 def _deepcopy_tuple(x, memo):
-    y = []
-    for a in x:
-        y.append(deepcopy(a, memo))
+    y = [deepcopy(a, memo) for a in x]
     d = id(x)
     try:
         return memo[d]
     except KeyError:
         pass
-    for i in range(len(x)):
-        if x[i] is not y[i]:
-            y = tuple(y)
-            break
-    else:
-        y = x
+    y = next((tuple(y) for i in range(len(x)) if x[i] is not y[i]), x)
     memo[d] = y
     return y
 d[tuple] = _deepcopy_tuple
@@ -291,10 +264,7 @@ def _deepcopy_inst(x, memo):
         y = _EmptyClass()
         y.__class__ = x.__class__
     memo[id(x)] = y
-    if hasattr(x, '__getstate__'):
-        state = x.__getstate__()
-    else:
-        state = x.__dict__
+    state = x.__getstate__() if hasattr(x, '__getstate__') else x.__dict__
     state = deepcopy(state, memo)
     if hasattr(y, '__setstate__'):
         y.__setstate__(state)
@@ -310,20 +280,11 @@ def _reconstruct(x, info, deep, memo=None):
     if memo is None:
         memo = {}
     n = len(info)
-    assert n in (2, 3, 4, 5)
+    assert n in {2, 3, 4, 5}
     callable, args = info[:2]
-    if n > 2:
-        state = info[2]
-    else:
-        state = None
-    if n > 3:
-        listiter = info[3]
-    else:
-        listiter = None
-    if n > 4:
-        dictiter = info[4]
-    else:
-        dictiter = None
+    state = info[2] if n > 2 else None
+    listiter = info[3] if n > 3 else None
+    dictiter = info[4] if n > 4 else None
     if deep:
         args = deepcopy(args, memo)
     y = callable(*args)

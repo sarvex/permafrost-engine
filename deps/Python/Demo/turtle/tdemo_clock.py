@@ -94,7 +94,7 @@ def datum(z):
     return "%s %d %d" % (m, t, j)
 
 def tick():
-    t = datetime.today()
+    t = datetime.now()
     sekunde = t.second + t.microsecond*0.000001
     minute = t.minute + sekunde/60.0
     stunde = t.hour + minute/60.0

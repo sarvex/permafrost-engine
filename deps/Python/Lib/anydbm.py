@@ -33,6 +33,7 @@ tested for existence, and add interfaces to other dbm-like
 implementations.
 """
 
+
 class error(Exception):
     pass
 
@@ -50,7 +51,7 @@ for _name in _names:
     _errors.append(_mod.error)
 
 if not _defaultmod:
-    raise ImportError, "no dbm clone found; tried %s" % _names
+    raise (ImportError, f"no dbm clone found; tried {_names}")
 
 error = tuple(_errors)
 

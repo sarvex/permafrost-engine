@@ -65,7 +65,7 @@ class BastionClass:
         some idea of what it is.
 
         """
-        return "<Bastion for %s>" % self._name_
+        return f"<Bastion for {self._name_}>"
 
     def __getattr__(self, name):
         """Get an as-yet undefined attribute value.
@@ -101,34 +101,6 @@ def Bastion(object, filter = lambda name: name[:1] != '_',
     """
 
     raise RuntimeError, "This code is not secure in Python 2.2 and later"
-
-    # Note: we define *two* ad-hoc functions here, get1 and get2.
-    # Both are intended to be called in the same way: get(name).
-    # It is clear that the real work (getting the attribute
-    # from the object and calling the filter) is done in get1.
-    # Why can't we pass get1 to the bastion?  Because the user
-    # would be able to override the filter argument!  With get2,
-    # overriding the default argument is no security loophole:
-    # all it does is call it.
-    # Also notice that we can't place the object and filter as
-    # instance variables on the bastion object itself, since
-    # the user has full access to all instance variables!
-
-    def get1(name, object=object, filter=filter):
-        """Internal function for Bastion().  See source comments."""
-        if filter(name):
-            attribute = getattr(object, name)
-            if type(attribute) == MethodType:
-                return attribute
-        raise AttributeError, name
-
-    def get2(name, get1=get1):
-        """Internal function for Bastion().  See source comments."""
-        return get1(name)
-
-    if name is None:
-        name = repr(object)
-    return bastionclass(get2, name)
 
 
 def _test():

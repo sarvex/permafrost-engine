@@ -15,7 +15,7 @@ def listnodes(list, app, widget, level):
     klass = list.send(app, 'winfo', 'class', widget)
 ##      i = string.rindex(widget, '.')
 ##      list.insert(END, '%s%s (%s)' % ((level-1)*'.   ', widget[i:], klass))
-    list.insert(END, '%s (%s)' % (widget, klass))
+    list.insert(END, f'{widget} ({klass})')
     children = list.tk.splitlist(
             list.send(app, 'winfo', 'children', widget))
     for c in children:

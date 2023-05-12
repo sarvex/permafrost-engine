@@ -25,10 +25,9 @@ def run(statement, filename=None, sort=-1):
     prof = Profile()
     result = None
     try:
-        try:
-            prof = prof.run(statement)
-        except SystemExit:
-            pass
+        prof = prof.run(statement)
+    except SystemExit:
+        pass
     finally:
         if filename is not None:
             prof.dump_stats(filename)
@@ -45,10 +44,9 @@ def runctx(statement, globals, locals, filename=None, sort=-1):
     prof = Profile()
     result = None
     try:
-        try:
-            prof = prof.runctx(statement, globals, locals)
-        except SystemExit:
-            pass
+        prof = prof.runctx(statement, globals, locals)
+    except SystemExit:
+        pass
     finally:
         if filename is not None:
             prof.dump_stats(filename)
@@ -82,10 +80,9 @@ class Profile(_lsprof.Profiler):
 
     def dump_stats(self, file):
         import marshal
-        f = open(file, 'wb')
-        self.create_stats()
-        marshal.dump(self.stats, f)
-        f.close()
+        with open(file, 'wb') as f:
+            self.create_stats()
+            marshal.dump(self.stats, f)
 
     def create_stats(self):
         self.disable()

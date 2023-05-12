@@ -4,10 +4,9 @@ from types import FunctionType as function
 
 class EiffelBaseMetaClass(type):
 
-    def __new__(meta, name, bases, dict):
-        meta.convert_methods(dict)
-        return super(EiffelBaseMetaClass, meta).__new__(meta, name, bases,
-                                                        dict)
+    def __new__(cls, name, bases, dict):
+        cls.convert_methods(dict)
+        return super(EiffelBaseMetaClass, cls).__new__(cls, name, bases, dict)
 
     @classmethod
     def convert_methods(cls, dict):
@@ -26,8 +25,8 @@ class EiffelBaseMetaClass(type):
             elif isinstance(v, function):
                 methods.append(k)
         for m in methods:
-            pre = dict.get("%s_pre" % m)
-            post = dict.get("%s_post" % m)
+            pre = dict.get(f"{m}_pre")
+            post = dict.get(f"{m}_post")
             if pre or post:
                 dict[m] = cls.make_eiffel_method(dict[m], pre, post)
 

@@ -121,7 +121,7 @@ class UnparseTestCase(ASTTestCase):
 
     def test_min_int(self):
         self.check_roundtrip(str(-sys.maxint-1))
-        self.check_roundtrip("-(%s)" % (sys.maxint + 1))
+        self.check_roundtrip(f"-({sys.maxint + 1})")
 
     def test_imaginary_literals(self):
         self.check_roundtrip("7j")
@@ -195,13 +195,14 @@ class DirectoryTestCase(ASTTestCase):
         names = []
         for d in self.test_directories:
             test_dir = os.path.join(dist_dir, d)
-            for n in os.listdir(test_dir):
-                if n.endswith('.py') and not n.startswith('bad'):
-                    names.append(os.path.join(test_dir, n))
-
+            names.extend(
+                os.path.join(test_dir, n)
+                for n in os.listdir(test_dir)
+                if n.endswith('.py') and not n.startswith('bad')
+            )
         for filename in names:
             if test_support.verbose:
-                print('Testing %s' % filename)
+                print(f'Testing {filename}')
             source = read_pyfile(filename)
             self.check_roundtrip(source)
 

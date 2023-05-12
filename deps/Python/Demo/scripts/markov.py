@@ -25,10 +25,10 @@ class Markov:
         while True:
             subseq = seq[max(0, len(seq)-n):]
             options = trans[subseq]
-            next = choice(options)
-            if not next:
+            if next := choice(options):
+                seq += next
+            else:
                 break
-            seq += next
         return seq
 
 

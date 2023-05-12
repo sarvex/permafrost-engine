@@ -242,10 +242,7 @@ class Client:
         if pack_func:
             pack_func(args)
         self.do_call()
-        if unpack_func:
-            result = unpack_func()
-        else:
-            result = None
+        result = unpack_func() if unpack_func else None
         self.unpacker.done()
         return result
 
@@ -302,7 +299,7 @@ def recvfrag(sock):
     while n > 0:
         buf = sock.recv(n)
         if not buf: raise EOFError
-        n = n - len(buf)
+        n -= len(buf)
         frag = frag + buf
     return last, frag
 
@@ -703,7 +700,7 @@ class Server:
             self.packer.pack_uint(self.vers)
             return self.packer.get_buf()
         proc = self.unpacker.unpack_uint()
-        methname = 'handle_' + repr(proc)
+        methname = f'handle_{repr(proc)}'
         try:
             meth = getattr(self, methname)
         except AttributeError:

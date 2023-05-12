@@ -201,11 +201,12 @@ Test cyclic gc(?)
 >>> gc.enable()
 """
 
+
 import os
 import sys
 from distutils.util import get_platform
-PLAT_SPEC = "%s-%s" % (get_platform(), sys.version[0:3])
-src = os.path.join("build", "lib.%s" % PLAT_SPEC)
+PLAT_SPEC = f"{get_platform()}-{sys.version[:3]}"
+src = os.path.join("build", f"lib.{PLAT_SPEC}")
 sys.path.append(src)
 
 if __name__ == "__main__":

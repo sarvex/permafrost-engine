@@ -15,11 +15,7 @@ majorrev_re = re.compile('^[0-9]+')
 
 dir = rcslib.RCS()
 
-if sys.argv[1:]:
-    files = sys.argv[1:]
-else:
-    files = dir.listfiles()
-
+files = sys.argv[1:] if sys.argv[1:] else dir.listfiles()
 for file in files:
     # get the major revnumber of the file
     headbranch = dir.info(file)['head']
@@ -30,4 +26,4 @@ for file in files:
         dir.checkout(file, WITHLOCK)
 
     msg = "Bumping major revision number (to %d)" % majorrev
-    dir.checkin((file, "%s.0" % majorrev), msg, "-f")
+    dir.checkin((file, f"{majorrev}.0"), msg, "-f")

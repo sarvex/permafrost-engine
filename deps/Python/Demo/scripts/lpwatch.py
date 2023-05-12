@@ -39,7 +39,7 @@ def main():
         time.sleep(delay)
 
 def makestatus(name, thisuser):
-    pipe = os.popen('lpq -P' + name + ' 2>&1', 'r')
+    pipe = os.popen(f'lpq -P{name} 2>&1', 'r')
     lines = []
     users = {}
     aheadbytes = 0
@@ -51,7 +51,7 @@ def makestatus(name, thisuser):
         fields = line.split()
         n = len(fields)
         if len(fields) >= 6 and fields[n-1] == 'bytes':
-            rank, user, job = fields[0:3]
+            rank, user, job = fields[:3]
             files = fields[3:-2]
             bytes = int(fields[n-2])
             if user == thisuser:
@@ -65,33 +65,31 @@ def makestatus(name, thisuser):
             ujobs += 1
             ubytes += bytes
             users[user] = ujobs, ubytes
-        else:
-            if fields and fields[0] != 'Rank':
-                line = line.strip()
-                if line == 'no entries':
-                    line = name + ': idle'
-                elif line[-22:] == ' is ready and printing':
-                    line = name
-                lines.append(line)
+        elif fields and fields[0] != 'Rank':
+            line = line.strip()
+            if line == 'no entries':
+                line = f'{name}: idle'
+            elif line[-22:] == ' is ready and printing':
+                line = name
+            lines.append(line)
 
     if totaljobs:
         line = '%d K' % ((totalbytes+1023) // 1024)
         if totaljobs != len(users):
             line += ' (%d jobs)' % totaljobs
         if len(users) == 1:
-            line += ' for %s' % (users.keys()[0],)
+            line += f' for {users.keys()[0]}'
         else:
             line += ' for %d users' % len(users)
             if userseen:
                 if aheadjobs == 0:
-                    line += ' (%s first)' % thisuser
+                    line += f' ({thisuser} first)'
                 else:
                     line += ' (%d K before %s)' % (
                         (aheadbytes+1023) // 1024, thisuser)
         lines.append(line)
 
-    sts = pipe.close()
-    if sts:
+    if sts := pipe.close():
         lines.append('lpq exit status %r' % (sts,))
     return ': '.join(lines)
 

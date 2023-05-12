@@ -91,7 +91,7 @@ class WorkQ:
     def run(self, nworkers):
         if not self.work:
             return # Nothing to do
-        for i in range(nworkers-1):
+        for _ in range(nworkers-1):
             thread.start_new(self._worker, ())
         self._worker()
         self.todo.acquire()

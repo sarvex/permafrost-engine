@@ -17,31 +17,33 @@ class EnumMetaclass(type):
     subclassed.
     """
 
-    def __init__(cls, name, bases, dict):
-        super(EnumMetaclass, cls).__init__(name, bases, dict)
-        cls._members = []
+    def __init__(self, name, bases, dict):
+        super(EnumMetaclass, self).__init__(name, bases, dict)
+        self._members = []
         for attr in dict.keys():
             if not (attr.startswith('__') and attr.endswith('__')):
                 enumval = EnumInstance(name, attr, dict[attr])
-                setattr(cls, attr, enumval)
-                cls._members.append(attr)
+                setattr(self, attr, enumval)
+                self._members.append(attr)
 
-    def __getattr__(cls, name):
+    def __getattr__(self, name):
         if name == "__members__":
-            return cls._members
+            return self._members
         raise AttributeError, name
 
-    def __repr__(cls):
+    def __repr__(self):
         s1 = s2 = ""
-        enumbases = [base.__name__ for base in cls.__bases__
-                     if isinstance(base, EnumMetaclass) and not base is Enum]
-        if enumbases:
-            s1 = "(%s)" % ", ".join(enumbases)
-        enumvalues = ["%s: %d" % (val, getattr(cls, val))
-                      for val in cls._members]
-        if enumvalues:
+        if enumbases := [
+            base.__name__
+            for base in cls.__bases__
+            if isinstance(base, EnumMetaclass) and base is not Enum
+        ]:
+            s1 = f'({", ".join(enumbases)})'
+        if enumvalues := [
+            "%s: %d" % (val, getattr(cls, val)) for val in cls._members
+        ]:
             s2 = ": {%s}" % ", ".join(enumvalues)
-        return "%s%s%s" % (cls.__name__, s1, s2)
+        return f"{self.__name__}{s1}{s2}"
 
 class FullEnumMetaclass(EnumMetaclass):
     """Metaclass for full enumerations.
@@ -49,14 +51,14 @@ class FullEnumMetaclass(EnumMetaclass):
     A full enumeration displays all the values defined in base classes.
     """
 
-    def __init__(cls, name, bases, dict):
-        super(FullEnumMetaclass, cls).__init__(name, bases, dict)
-        for obj in cls.__mro__:
+    def __init__(self, name, bases, dict):
+        super(FullEnumMetaclass, self).__init__(name, bases, dict)
+        for obj in self.__mro__:
             if isinstance(obj, EnumMetaclass):
                 for attr in obj._members:
                     # XXX inefficient
-                    if not attr in cls._members:
-                        cls._members.append(attr)
+                    if attr not in self._members:
+                        self._members.append(attr)
 
 class EnumInstance(int):
     """Class to represent an enumeration value.
@@ -80,7 +82,7 @@ class EnumInstance(int):
                                              self)
 
     def __str__(self):
-        return "%s.%s" % (self.__classname, self.__enumname)
+        return f"{self.__classname}.{self.__enumname}"
 
 class Enum:
     __metaclass__ = EnumMetaclass
